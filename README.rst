@@ -2,7 +2,8 @@
 dmcutils
 =========
 
-Programs used to help with the Dual-Multi-sCale (DMC) experiment  Andor Neo
+Programs used to help with the Dual-Multi-sCale (DMC) experiment.
+Example of dealing with 100000 - 1 million Andor Neo spool files in a fast way (using GNU Octave or Matlab)
 
 Note:
 -----
