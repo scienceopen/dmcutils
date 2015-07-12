@@ -1,6 +1,8 @@
 function NeoPacked12bitToFITS(spooldir,imsize)
 % given a Neo 12bit packed spool directory (with the corrupted 2008 Andor Solis
 % beta files) read all the images in that directory and convert to FITS
+% That is, very many .dat spool files from a single directory are converted to
+% one big FITS file, readable in ImageJ, etc.
 
 datlist = dir([spooldir,'/*.dat']);
 datfn = {datlist.name};
