@@ -3,6 +3,7 @@ function NeoPacked12bitToFITS(spooldir,imsize)
 % beta files) read all the images in that directory and convert to FITS
 % That is, very many .dat spool files from a single directory are converted to
 % one big FITS file, readable in ImageJ, etc.
+% Michael Hirsch
 
 datlist = dir([spooldir,'/*.dat']);
 datfn = {datlist.name};
