@@ -6,16 +6,25 @@ datlist = dir([spooldir,'/*.dat']);
 datfn = {datlist.name};
 disp(['I found ',int2str(length(datfn)),' .dat files in ',spooldir])
 
-fitsfn = [spooldir,'/out.fits'];
+%too lazy for regexp
+if spooldir(end) == '/' || spooldir(end) == '\'
+    full = spooldir(1:end-1);
+else
+    full = spooldir;
+end
+[~,basename] = fileparts(full);
 
-for i = 1:length(datfn)
-    data = readNeoPacked12bit([spooldir,'/',datfn{i}],imsize);
-    if ~exist(fitsfn,'file')
-        writemode='overwrite';
-    else
-        writemode='append'; %stupid fitswrite api crashes if no fits already there
-    end
-    fitswrite(int32(data),fitsfn,'WriteMode',writemode,'Compression','gzip')    
+fitsfn = [spooldir,'../',basename,'.fits'];
+nfiles = length(datfn);
+
+data = zeros([imsize,nfiles],'uint16');
+
+for i = 1:nfiles
+    data(:,:,i) = readNeoPacked12bit([spooldir,'/',datfn{i}],imsize);
+    fprintf(' %.0f%%',i/length(datfn)*100)
+    %note, many FITS readers trip up on compression. You can just 7zip the bunch
+    % of FITS files you create.
+    fitswrite(int32(data),fitsfn,'Compression','none')    
 end
 
 end
