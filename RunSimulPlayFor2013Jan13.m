@@ -7,7 +7,7 @@ clear
 close all
 clc
 
-dataDir = '~/c/data/';
+dataDir = '~/data/';
 
 day2sec = 86400;
 both.pbFPS = 20;
