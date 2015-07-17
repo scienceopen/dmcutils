@@ -7,7 +7,7 @@ clear
 close all
 clc
 
-dataDir = '/media/small/BigData/Imaging/2013-01-13';
+dataDir = '~/c/data/';
 
 day2sec = 86400;
 both.pbFPS = 20;
@@ -29,17 +29,17 @@ ccd.maxVal = 3400;
 ccd.stem = [dataDir,'/2013-01-13T21-00-00_frames_562000-1-568000.DMCdata'];
 ccd.kineticSec = 0.02711; 
 ccd.fullFileStart = datenum([2013 01 13 21 00 00]);
-ccd.startUT = ccd.fullFileStart + 562000*ccd.kineticSec/day2sec;
+ccd.startUT = ccd.fullFileStart + (562000-1)*ccd.kineticSec/day2sec;
 
 cmos.minVal = 0; 
 cmos.maxVal = 1000;
-cmos.stem{1} = [dataDir,'/neo2013-01-13_X38_frames8300-9500.tif'];
+cmos.stem = {[dataDir,'/neo2013-01-13_X38_frames8300-9500.tif']}; %must be a cell
 cmos.kineticSec = 0.03008434; 
 cmos.fullFileStart = datenum([2013 01 13 21 14 34]);
 cmos.framesPerFile = 12427;
 %remember, CMOS FITS files are named zero-indexed!
 cmos.startUT =cmos.fullFileStart + ...
-    ((38*cmos.framesPerFile + 8300)*cmos.kineticSec )/day2sec;
+    ((38*cmos.framesPerFile + (8300-1))*cmos.kineticSec )/day2sec;
 
 
-[ccd2,cmos2,both2]=simulPlay3(ccd,cmos,both);
+[ccd2,cmos2,both2]=simulPlay(ccd,cmos,both);
