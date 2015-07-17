@@ -15,6 +15,6 @@ Experiments:
 **2013 Jan 13** great example, run in Octave 4.0+ or Matlab 
 ``RunSimulPlayFor2013Jan13`` to show simultaneous video from cameras
 
-datadir       path to data files
-writevid      filename to write to (uncompressed AVI)
+-datadir       path to data files
+-writevid      filename to write to (uncompressed AVI)
 
