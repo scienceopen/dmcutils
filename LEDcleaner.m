@@ -36,7 +36,7 @@ function data = LEDcleaner(varargin)
 addpath('histutils')
 %%
 p = inputParser;
-addParamValue(p,'datadir','~/data')
+addParamValue(p,'datadir','~/data') %#ok<*NVREPL>
 parse(p,varargin{:})
 U = p.Results;
 
