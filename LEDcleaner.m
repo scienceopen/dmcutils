@@ -37,7 +37,6 @@ addpath('histutils')
 %%
 p = inputParser;
 addParamValue(p,'datadir','~/data')
-addParamValue(p,'writevid',[]) %#ok<*NVREPL> % need this for Octave 4.0 which doesn't have addParameter
 parse(p,varargin{:})
 U = p.Results;
 
