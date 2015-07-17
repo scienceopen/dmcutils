@@ -1,7 +1,7 @@
-function data = LEDcleaner()
+function data = LEDcleaner(varargin)
 %% LED reflection cleanser
 % A program that takes out the flashing LED reflection from the Jan 13,
-% 2013 DMC CCD data. A nice mutual observation between Neo and CCD, but CCD
+% 2013 DMC CCD data. A nice mutual observation between CMOS and CCD, but CCD
 % has really bright LED flashing. We want to see if there is a 
 % straightforward way to remove the LED from this data.
 %
@@ -32,23 +32,34 @@ function data = LEDcleaner()
 % Complicating our LED reflection estimate $\hat{e}$ is that the image $X$
 % is riddled with time-varying noise.
 %
-BigFN = '~/Downloads/2013-01-13T21-00-00_frames_562000-1-568000.DMCdata';
+
+addpath('histutils')
+%%
+p = inputParser;
+addParamValue(p,'datadir','~/data')
+addParamValue(p,'writevid',[]) %#ok<*NVREPL> % need this for Octave 4.0 which doesn't have addParameter
+parse(p,varargin{:})
+U = p.Results;
+
+BigFN = [U.datadir,filesep,'2013-01-13T21-00-00_frames_562000-1-568000.DMCdata'];
 %% read the data from disk
-[data,rawFrameInd,nFrame] = rawDMCreader(BigFN,512,512,4,4,0,[1000,4000]);
+[data,rawFrameInd] = rawDMCreader(BigFN,512,512,4,4,'all',0,[1000,4000]);
+nFrame = length(rawFrameInd);
 % plot example "bad" frame with LED reflection
 badFrame = double(data(:,:,2)); 
 
-figure(10),clf(10)
-imagesc(badFrame,[1000 2500])
-set(gca,'ydir','normal')
+figure(10),clf(10),set(10,'name','image with LED reflection')
+ax10=axes('parent',10);
+imagesc(badFrame,[1000 2500]);
+set(ax10,'ydir','normal')
 colormap('jet')
-xlabel('x-pixels'),ylabel('y-pixels')
-title(['Raw # ',int2str(rawFrameInd(2))])
-colorbar
+xlabel(ax10,'x-pixels'), ylabel(ax10,'y-pixels')
+title(ax10,['Raw # ',int2str(rawFrameInd(2))])
+colorbar('peer',ax10)
 %% plot what happens at a few pixels
 % pick a couple pixels to plot over time
-xSel = [69, 128,68,127,126];
-ySel = [83, 20, 83,20, 20 ];
+ySel = [69, 128,68,127,126];
+xSel = [83, 20, 83,20, 20 ];
 
 % hist() requires single or double data; Octave requires single or double
 % for line() and plot()
@@ -56,7 +67,7 @@ ySel = [83, 20, 83,20, 20 ];
 % bad pixels
 pixData(:,1) = double(data(ySel(1),xSel(1),:)); 
 pixData(:,2) = double(data(ySel(2),xSel(2),:)); 
-% neighboring pixels to bad
+% neighboring pixels to the bad pixels
 pixData(:,3) = double(data(ySel(3),xSel(3),:)); 
 pixData(:,4) = double(data(ySel(4),xSel(4),:)); %still bad!
 pixData(:,5) = double(data(ySel(5),xSel(5),:)); %better
