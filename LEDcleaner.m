@@ -34,15 +34,19 @@ function data = LEDcleaner(varargin)
 %
 
 addpath('histutils')
+if isoctave
+  pkg load image
+end
 %%
 p = inputParser;
 addParamValue(p,'datadir','~/data') %#ok<*NVREPL>
+addParamValue(p,'fullplot',false)
 parse(p,varargin{:})
 U = p.Results;
 
-BigFN = [U.datadir,filesep,'2013-01-13T21-00-00_frames_562000-1-568000.DMCdata'];
+bigfn = [U.datadir,filesep,'2013-01-13T21-00-00_frames_562000-1-568000.DMCdata'];
 %% read the data from disk
-[data,rawFrameInd] = rawDMCreader(BigFN,512,512,4,4,'all',0,[1000,4000]);
+[data,rawFrameInd] = rawDMCreader(bigfn,'rcbin',[4,4],'clim',[1000,4000]);
 nFrame = length(rawFrameInd);
 % plot example "bad" frame with LED reflection
 badFrame = double(data(:,:,2)); 
@@ -60,40 +64,39 @@ colorbar('peer',ax10)
 ySel = [69, 128,68,127,126];
 xSel = [83, 20, 83,20, 20 ];
 
-% hist() requires single or double data; Octave requires single or double
-% for line() and plot()
-
 % bad pixels
-pixData(:,1) = double(data(ySel(1),xSel(1),:)); 
-pixData(:,2) = double(data(ySel(2),xSel(2),:)); 
+pixData(:,1) = data(ySel(1),xSel(1),:); 
+pixData(:,2) = data(ySel(2),xSel(2),:); 
 % neighboring pixels to the bad pixels
-pixData(:,3) = double(data(ySel(3),xSel(3),:)); 
-pixData(:,4) = double(data(ySel(4),xSel(4),:)); %still bad!
-pixData(:,5) = double(data(ySel(5),xSel(5),:)); %better
+pixData(:,3) = data(ySel(3),xSel(3),:); 
+pixData(:,4) = data(ySel(4),xSel(4),:); %still bad!
+pixData(:,5) = data(ySel(5),xSel(5),:); %better
 
 %% time-series plotting
 % first plot over time, then we'll zoom in for some clues...
 % observe the spatial LED correlation within the "on" times from widely
 % spatially separated pixels
-figure(2),clf(2),set(2,'name','Time-series')
+if U.fullplot
+  figure(2),clf(2),set(2,'name','Time-series')
 
-subplot(2,1,1)
-line(1:nFrame, pixData(:,1) , 'color','r')
-line(1:nFrame, pixData(:,3) , 'color','b')
-ylabel('Data Numbers')
-axis('tight')
-legend('bad pixel','neighbor pixel','location','best')
-title(['(x,y) =(',int2str(xSel([1,3])),',',int2str(ySel([1,3])),')'])
+  subplot(2,1,1)
+  line(1:nFrame, pixData(:,1) , 'color','r')
+  line(1:nFrame, pixData(:,3) , 'color','b')
+  ylabel('Data Numbers')
+  axis('tight')
+  legend('bad pixel','neighbor pixel','location','best')
+  title(['(x,y) =(',int2str(xSel([1,3])),',',int2str(ySel([1,3])),')'])
 
-subplot(2,1,2)
-line(1:nFrame, pixData(:,2) , 'color','r')
-line(1:nFrame, pixData(:,4) , 'color','m')
-line(1:nFrame, pixData(:,5) , 'color','b')
-% label the axes
-ylabel('Data Numbers')
-xlabel('File Frame # ')
-title(['(x,y) = (',int2str(xSel([2,4,5])),',',int2str(ySel([2,4,5])),')'])
-axis('tight')
+  subplot(2,1,2)
+  line(1:nFrame, pixData(:,2) , 'color','r')
+  line(1:nFrame, pixData(:,4) , 'color','m')
+  line(1:nFrame, pixData(:,5) , 'color','b')
+  % label the axes
+  ylabel('Data Numbers')
+  xlabel('File Frame # ')
+  title(['(x,y) = (',int2str(xSel([2,4,5])),',',int2str(ySel([2,4,5])),')'])
+  axis('tight')
+end %if fullplot
 
 % now the zoomed-in version
 zoomTimeInd = 1:200;
@@ -116,7 +119,6 @@ ylabel('Data Numbers')
 xlabel('File Frame # ')
 title(['(x,y) = (',int2str(xSel([2,4,5])),',',int2str(ySel([2,4,5])),')'])
 axis('tight')
-
 
 %% histogram analysis
 % histograms tell us about the pdf (probability density function) of
