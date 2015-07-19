@@ -5,7 +5,7 @@ Michael Hirsch
 """
 from oct2py import Oct2Py
 
-oc = Oct2Py(oned_as='column',convert_to_float=True,timeout=5)
+oc = Oct2Py(oned_as='column',timeout=5)
 
 def calibrate(datadir):
     [ccd,cmos,both] = oc.RunSimulPlayFor2013Jan13('datadir',datadir,'play',False)
