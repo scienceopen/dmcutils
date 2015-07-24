@@ -34,7 +34,7 @@ def calibrate(datadir,infn):
     writefits(meanimg,fitsfn)
 
 #%%
-    x,y,ra,dec,az,el,timeFrame = fits2azel(fitsfn,cmos['latlon'],cmos['startUT'],['show','h5'],(0,2800))
+    x,y,ra,dec,az,el,timeFrame = fits2azel(fitsfn,cmos['latlon'],cmos['startUT'],['show','h5','png'],(0,2800))
 
 
 if __name__ == '__main__':
