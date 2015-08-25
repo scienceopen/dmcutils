@@ -1,5 +1,7 @@
 function data = LEDcleaner(varargin)
 %% LED reflection cleanser
+% requires Octave 4.0+ or Matlab
+%
 % A program that takes out the flashing LED reflection from the Jan 13,
 % 2013 DMC CCD data. A nice mutual observation between CMOS and CCD, but CCD
 % has really bright LED flashing. We want to see if there is a 
