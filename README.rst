@@ -9,17 +9,15 @@ Requirements:
 =============
 `GNU Octave 4.0+ <http://www.gnu.org/software/octave/>`_ or Matlab R2014b+
 
-
-Note:
------
-This is very messy, we will update this code when we actually use it again. I put the most recent version here so we would know where to pickup from.
+Functions
+=========
+* ``angledist`` computes angular distance between points (in degrees) for a pair of points with RA,decl. or az,el.
 
 Experiments:
-------------
+============
 
-**2013 Jan 13** great example, run in Octave 4.0+ or Matlab 
+**2013 Jan 13** great example, run in Octave 4.0+ or Matlab
 ``RunSimulPlayFor2013Jan13`` to show simultaneous video from cameras
 
 -datadir       path to data files
 -writevid      filename to write to (uncompressed AVI)
-

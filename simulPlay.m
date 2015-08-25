@@ -17,7 +17,7 @@ function [ccd, cmos,both] = simulPlay(ccd,cmos,both,U)
 % writevid: give filename of frame capture you want to write to disk
 %
 % this function plays back CCD and sCMOS data at the same time, using the
-% "nearest neighbor" frame for each--frames can be repeated during playback, 
+% "nearest neighbor" frame for each--frames can be repeated during playback,
 % especially if camera frame rates are different from each other.
 % e.g. if one camera fps is 1/2 the other camera fps, the first camera
 % playback will show the same frame twice for every one of the second
@@ -41,7 +41,7 @@ function [ccd, cmos,both] = simulPlay(ccd,cmos,both,U)
 %
 % both.pbFPS = 10;
 % both.simKineticSec = 0.1; %skips frames to speedup playback
-% both.reqStartUT = nan; 
+% both.reqStartUT = nan;
 % both.reqStopUT = nan;
 % [ccd2,cmos2,both2]=simulPlay(ccd,cmos,both)
 %% check input
@@ -58,79 +58,17 @@ else
     cmos = setupcmos(cmos);
 end
 %% setup figures
-[ccd,cmos,fig,hvid] = setupfig(ccd,cmos,U.writevid);
+[ccd,cmos,fig,hvid] = setupfig(ccd,cmos,U.writevid,U.play);
 %% synchronize
-[ccd,cmos,both] = synccam(ccd,cmos,both);    
+[ccd,cmos,both] = synccam(ccd,cmos,both);
 %% playback
 %display(['virtual playback rate user specified: ',num2str(both.pbFPS),'fps'])
 
 display(['Playback kinetic time = ',num2str(both.simKineticSec),' sec.'])
 display(['CMOS kinetic time = ',num2str(cmos.kineticSec),' sec.'])
 display(['CCD kinetic time = ',num2str(ccd.kineticSec),' sec.'])
-
-if strcmp(ccd.ext,'.DMCdata'), 
-    fid = fopen(ccd.stem); 
-%seek to first frame
-    fseek(fid,(ccd.pbInd(1) - 1) * ccd.BytesPerFrame,'bof');
-end
-
-for t = 1:length(both.tUT)
-      
-    %update CCD
-    switch ccd.ext
-        case '.tif', ccdFrame = imread(ccd.stem,'index',ccd.pbInd(t));
-        case '.DMCdata'
-            ccdFrame = rot90(fread(fid,[ccd.nRow ccd.nCol],'uint16=>uint16',0,'l').',1);  
-            metadata = fread(fid,ccd.nHead16,'uint16=>uint16',0,'l');
-            ccd.frameInd = typecast([metadata(2) metadata(1)],'uint32');
-    end
-    if ccd.rot90cw
-        ccdFrame = rot90(ccdFrame,-1);
-    else %unrotated
-    end
-    set(ccd.imgH, 'cdata',ccdFrame)
-    set(ccd.titleH,'string',{['CCD: ',...
-        datestr(ccd.tUT(ccd.pbInd(t)),'yyyy-mm-ddTHH:MM:SS.FFF'),'UT',...
-        ' frame: ',int2str(ccd.frameInd)];...
-        ['file: ',ccd.stem]})
- %======================   
-    %update CMOS
-try
-      cmosFileInd = fix((cmos.pbInd(t)-1)/cmos.nFramePerFile + 1); %takes integer part
-
-      cmosSliceInd = cmos.pbInd(t) - cmos.nFramePerFile .* (cmosFileInd-1); %handles rollover
-      
-    cmosFrame = imread(cmos.stem{cmosFileInd},...
-                'index',cmosSliceInd);
-  %=== orientation correction ==
-    if cmos.rot90cw
-        cmosFrame = rot90(cmosFrame,-1);
-    else %unrotated        
-    end
-
-  %=============================
-    set(cmos.imgH, 'cdata',cmosFrame)
-    set(cmos.titleH,'string',{['CMOS: ',...
-        datestr(cmos.tUT(cmos.pbInd(t)),'yyyy-mm-ddTHH:MM:SS.FFF'),'UT',...
-        ' slice: ',int2str(cmosSliceInd)];...
-        [' file: ',cmos.stem{cmosFileInd}]})
-catch e
-    cmosFileInd %#ok<*NOPRT>
-    cmosSliceInd
-    cmos.pbInd(t)
-    display(e.message)
-end
-  if ~isempty(hvid)
-     I = getframe(fig);
-     writeVideo(hvid,I)
-  end
-  pause(1/both.pbFPS)
-
-end %for t
-
-try close(hvid), end 
-
-if strcmp(ccd.ext,'.DMCdata'), fclose(fid); end
+%% loop video
+playvideo(ccd,cmos,both,fig,hvid)
 
 end %function
 
@@ -154,7 +92,7 @@ switch ccd.ext
       yPixels=512;
       xBin = 4;
       yBin = 4;
-      ccd.nHead16 = 2; %# of 16-bit header elements 
+      ccd.nHead16 = 2; %# of 16-bit header elements
       nHeadBytes = 2 * ccd.nHead16;
       SuperX = xPixels/xBin;
       SuperY = yPixels/yBin;
@@ -166,7 +104,7 @@ switch ccd.ext
       ccd.nCol = SuperX;
       ccd.nRow = SuperY;
 end %switch
-    
+
 end %function
 
 function cmos = setupcmos(cmos)
@@ -181,17 +119,22 @@ cmos.nFrame = cmos.nFramePerFile .* length(cmos.stem); %length of total rollover
 cmos.tiffinfo = tmp(1);
 cmos.nCol = cmos.tiffinfo.Width;
 cmos.nRow = cmos.tiffinfo.Height;
-   
+
 end %function
 
-function [ccd,cmos,fig,hvid] = setupfig(ccd,cmos,writevid)
+function [ccd,cmos,fig,hvid] = setupfig(ccd,cmos,writevid,play)
+if ~play
+    fig = []; hvid=[];
+    return
+end
+
 
 figPos = [50 50 1000 500];
-fig = figure('pos',figPos,'menubar','none');
+fig = figure('position',figPos,'menubar','none');
 
 if ~isempty(ccd)
     ccd.panelPos = [2 100 400 300];
-    ccd.panelH = uipanel('parent',fig,'units','pixels','pos',ccd.panelPos);
+    ccd.panelH = uipanel('parent',fig,'units','pixels','position',ccd.panelPos);
     ccd.pbAx = axes('parent',ccd.panelH);
 
     ccd.imgH = imagesc(1:ccd.nCol,1:ccd.nRow,nan(ccd.nCol,ccd.nRow),...
@@ -204,7 +147,7 @@ end
 
 if ~isempty(cmos)
     cmos.panelH = uipanel('parent',fig,'units','pixels',...
-        'pos',[ccd.panelPos(1)+ccd.panelPos(3)+10 5 600 500]);
+        'position',[ccd.panelPos(1)+ccd.panelPos(3)+10 5 600 500]);
     cmos.pbAx = axes('parent',cmos.panelH);
 
     if cmos.rot90cw
@@ -220,7 +163,7 @@ if ~isempty(cmos)
     colormap('gray')
     set(get(cmos.cbH,'ylabel'),'string','sCMOS 16-bit data numbers [0..65535]')
 end
-    
+
 if ~isempty(writevid)
    hvid = VideoWriter(writevid,'Uncompressed AVI');
    open(hvid)
@@ -270,5 +213,82 @@ display([datestr(both.tUT(1)),'UT to ',...
 %use nearest neighbor interpolation to find mutual frames to display
 ccd.pbInd = interp1(ccd.tUT,1:ccd.nFrame,both.tUT,'nearest');
 cmos.pbInd= interp1(cmos.tUT,1:cmos.nFrame,both.tUT,'nearest');
-    
+
+end %function
+
+function playvideo(ccd,cmos,both,fig,hvid)
+if isempty(fig)
+disp('skipping video playback per user request')
+return
+end
+
+try
+    t=[]; cmosFileInd=[]; cmosSliceInd=[]; %in case loop not entered
+
+    if strcmp(ccd.ext,'.DMCdata'),
+        fid = fopen(ccd.stem);
+        %seek to first frame
+        fseek(fid,(ccd.pbInd(1) - 1) * ccd.BytesPerFrame,'bof');
+    end
+
+    for t = 1:length(both.tUT)
+
+        %update CCD
+        switch ccd.ext
+            case '.tif', ccdFrame = imread(ccd.stem,'index',ccd.pbInd(t));
+            case '.DMCdata'
+                ccdFrame = rot90(fread(fid,[ccd.nRow ccd.nCol],'uint16=>uint16',0,'l').',1);
+                metadata = fread(fid,ccd.nHead16,'uint16=>uint16',0,'l');
+                ccd.frameInd = typecast([metadata(2) metadata(1)],'uint32');
+        end
+        if ccd.rot90cw
+            ccdFrame = rot90(ccdFrame,-1);
+        else %unrotated
+        end
+        set(ccd.imgH, 'cdata',ccdFrame)
+        set(ccd.titleH,'string',{['CCD: ',...
+            datestr(ccd.tUT(ccd.pbInd(t)),'yyyy-mm-ddTHH:MM:SS.FFF'),'UT',...
+            ' frame: ',int2str(ccd.frameInd)];...
+            ['file: ',ccd.stem]})
+     %======================
+        %update CMOS
+
+          cmosFileInd = fix((cmos.pbInd(t)-1)/cmos.nFramePerFile + 1); %takes integer part
+
+          cmosSliceInd = cmos.pbInd(t) - cmos.nFramePerFile .* (cmosFileInd-1); %handles rollover
+
+        cmosFrame = imread(cmos.stem{cmosFileInd},  'index',cmosSliceInd);
+      %=== orientation correction ==
+        if cmos.rot90cw
+            cmosFrame = rot90(cmosFrame,-1);
+        else %unrotated
+        end
+
+      %=============================
+        set(cmos.imgH, 'cdata',cmosFrame)
+        set(cmos.titleH,'string',{['CMOS: ',...
+            datestr(cmos.tUT(cmos.pbInd(t)),'yyyy-mm-ddTHH:MM:SS.FFF'),'UT',...
+            ' slice: ',int2str(cmosSliceInd)];...
+            [' file: ',cmos.stem{cmosFileInd}]})
+
+
+      if ~isempty(hvid)
+         I = getframe(fig);
+         writeVideo(hvid,I)
+      end
+      pause(1/both.pbFPS)
+
+    end %for t
+catch e
+    cmosFileInd %#ok<*NOPRT>
+    cmosSliceInd
+    cmos.pbInd(t)
+    display(e.message)
+end %try
+
+try close(hvid), end
+
+try fclose(fid); end
+
+
 end %function
