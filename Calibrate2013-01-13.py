@@ -6,17 +6,13 @@ Michael Hirsch
 #from oct2py import Oct2Py
 #from dateutil.parser import parse
 from datetime import datetime,timedelta
-from os.path import join,expanduser
-import sys
-sys.path.append('../astrometry')
+from os.path import join,split
 #
-from imgAvgfits import meanstack,writefits
-from fits2azel import fits2azel
+# REQUIRES https;//github.com/scienceopen/astrometry_azel
+from astrometry_azel.imgAvgfits import meanstack,writefits
+from astrometry_azel.fits2azel import fits2azel
 
-def calibrate(datadir,infn):
-    #oc = Oct2Py(oned_as='column',timeout=5)
-    #[ccd,cmos,both] = oc.RunSimulPlayFor2013Jan13('datadir',datadir,'play',False)
-    #cmosStartUT = parse(oc.datestr(cmos['startUT']))
+def calibrate(infn):
     Xfilenum = 38
     Xstartframe = 8300
     cmos = {'fullFileStart': datetime(2013, 1, 13, 21, 14, 34),
@@ -27,10 +23,10 @@ def calibrate(datadir,infn):
     cmos['startUT'] = cmos['fullFileStart'] +  timedelta(seconds= (Xfilenum*cmos['framesPerFile'] + (Xstartframe-1))*cmos['kineticSec'] )
     print(cmos['startUT'])
 
-    cmosfn = join(datadir,infn)
+    datadir = split(infn)[0]
 #%% convert to mean
     fitsfn=join(datadir,'cmosmean.fits')
-    meanimg = meanstack(cmosfn,10)
+    meanimg = meanstack(infn,10)
     writefits(meanimg,fitsfn)
 
 #%%
@@ -40,8 +36,7 @@ def calibrate(datadir,infn):
 if __name__ == '__main__':
     from argparse import ArgumentParser
     p = ArgumentParser(description='do plate scaling for 2013 Jan 13 CMOS data')
-    p.add_argument('--datadir',help='directory where sCMOS data is',default='~/data')
-    p.add_argument('--cmosfn',help='cmos data file name',default='neo2013-01-13_X38_frames8300-9500.tif')
+    p.add_argument('cmosfn',help='cmos data file name')
     p = p.parse_args()
 
-    calibrate(p.datadir,p.cmosfn)
+    calibrate(p.cmosfn)
