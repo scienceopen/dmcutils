@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """ script to calibrate sCMOS data for 2013-01-13
-assumes that https://github.com/scienceopen/astrometry is in adjacent directory ../astrometry
 Michael Hirsch
 """
 #from oct2py import Oct2Py
