@@ -4,41 +4,30 @@ the CCD data was the first frame of irs_archive1/DMC/DataField/2012-11-22ccd.7z/
 
 Michael Hirsch
 """
-from datetime import datetime,timedelta
-from os.path import join,split
+from os.path import splitext
+from tempfile import mkstemp
 #
 # REQUIRES https;//github.com/scienceopen/astrometry_azel
 from astrometry_azel.imgAvgfits import meanstack,writefits
 from astrometry_azel.fits2azel import fits2azel
 
-def platescale_cmos(infn):
+def doplatescale(infn,outfn,latlon,ut1):
     if infn is None:
         return
-
-    Xfilenum = 38
-    Xstartframe = 8300
-    cmos = {'fullFileStart': datetime(2013, 1, 13, 21, 14, 34),
-                 'framesPerFile':12427,
-                 'kineticSec':0.03008434,
-                 'latlon':(66.986330, -50.943941)}
-
-    cmos['startUT'] = cmos['fullFileStart'] +  timedelta(seconds= (Xfilenum*cmos['framesPerFile'] + (Xstartframe-1))*cmos['kineticSec'] )
-    print(cmos['startUT'])
-
-    datadir = split(infn)[0]
+    fitsfn = splitext(outfn)[0] + '.fits'
 #%% convert to mean
-    fitsfn=join(datadir,'cmosmean.fits')
-    meanimg = meanstack(infn,10)
+    meanimg,ut1 = meanstack(infn,1,ut1)
     writefits(meanimg,fitsfn)
-
 #%%
-    x,y,ra,dec,az,el,timeFrame = fits2azel(fitsfn,cmos['latlon'],cmos['startUT'],['show','h5','png'],(0,2800))
-
+    x,y,ra,dec,az,el,timeFrame = fits2azel(fitsfn,latlon,ut1,['show','h5','png'],(0,2800))
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
     p = ArgumentParser(description='do plate scaling for 2013 Jan 13 CMOS data')
-    p.add_argument('cmosfn',help='cmos data file name')
+    p.add_argument('infn',help='image data file name')
+    p.add_argument('-o','--outfn',help='platescale data file name to write',default=mkstemp('.h5')[1])
+    p.add_argument('--latlon',help='wgs84 coordinates of cameras (deg.)',default=(66.986330, -50.943941),type=float)
+    p.add_argument('--ut1',help='force UT1 time yyyy-mm-ddTHH:MM:SSZ')
     p = p.parse_args()
 
-    platescale_cmos(p.cmosfn)
+    doplatescale(p.infn,p.outfn,p.latlon,p.ut1)
