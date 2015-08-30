@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-""" script to calibrate sCMOS data for 2013-01-13
+""" script to calibrate sCMOS and CCD data for 2013-01-13
+the CCD data was the first frame of irs_archive1/DMC/DataField/2012-11-22ccd.7z/spool.fits on our internal server.
+
 Michael Hirsch
 """
-#from oct2py import Oct2Py
-#from dateutil.parser import parse
 from datetime import datetime,timedelta
 from os.path import join,split
 #
@@ -11,7 +11,10 @@ from os.path import join,split
 from astrometry_azel.imgAvgfits import meanstack,writefits
 from astrometry_azel.fits2azel import fits2azel
 
-def calibrate(infn):
+def platescale_cmos(infn):
+    if infn is None:
+        return
+
     Xfilenum = 38
     Xstartframe = 8300
     cmos = {'fullFileStart': datetime(2013, 1, 13, 21, 14, 34),
@@ -38,4 +41,4 @@ if __name__ == '__main__':
     p.add_argument('cmosfn',help='cmos data file name')
     p = p.parse_args()
 
-    calibrate(p.cmosfn)
+    platescale_cmos(p.cmosfn)
