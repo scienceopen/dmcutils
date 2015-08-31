@@ -5,6 +5,8 @@ dmcutils
 Programs used to help with the Dual-Multi-sCale (DMC) experiment.
 Example of dealing with 100000 - 1 million Andor Neo spool files in a fast way (using GNU Octave or Matlab)
 
+.. contents::
+
 Requirements:
 =============
 `GNU Octave 4.0+ <http://www.gnu.org/software/octave/>`_ or Matlab R2014b+
@@ -12,6 +14,10 @@ Requirements:
 Functions
 =========
 * ``angledist`` computes angular distance between points (in degrees) for a pair of points with RA,decl. or az,el.
+
+Caveats
+=======
+The Andor Solis Neo spool file format has changed at least three times. This spool reader is known to work for the 2011-2012 versions (I don't have exact version numbers, but could find out if you need).
 
 Experiments:
 ============
