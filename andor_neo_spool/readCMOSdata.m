@@ -1,3 +1,5 @@
+%not efficient, use ../readNeoPacked12bit.m
+
 function data2 = readCMOSdata(datafile,imsize)
 
 % read once as big-endian

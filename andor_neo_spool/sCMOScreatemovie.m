@@ -1,4 +1,7 @@
-%% quickly try to read CMOS data (12 bits packed)
+% This program is somewhat non-sensical, just use
+% ../NeoPacked12bitToFITS.m 
+
+% quickly try to read CMOS data (12 bits packed)
 % inputs
 % -------
 % topdir: directory to scan for spool files 
@@ -96,9 +99,8 @@ for j = 6, %:length(d0),
             end
             
             data2 = (double(xd) - dark) .* screen ./ flat;
-            
-            ss = ss + 1/fps(j);
-            newtime = datenum(yy,mm,dd,hh,mn,ss);
+             
+            newtime = starttime + 1/fps(j)/86400; %TODO is this correct?
             
             data3 = bin2x2(data2);
             set(im1,'CData',data3');
