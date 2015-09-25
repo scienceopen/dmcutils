@@ -1,6 +1,6 @@
-function screen = cornerzero(imsize)      
+function screen = cornerzero(imsize,docut)      
 % screen to cut off corners
-        
+if docut
         mi = imsize/2;
         hyp = hypot(mi(1),mi(2));
         
@@ -16,4 +16,8 @@ function screen = cornerzero(imsize)
                 end
             end
         end
+else
+    screen = [];
+end
+
 end
