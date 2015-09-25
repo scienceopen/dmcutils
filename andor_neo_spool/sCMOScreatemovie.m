@@ -9,8 +9,8 @@ d0 = dir([topdir,filesep, '1103*']);
 
 denoise = true; 
 
-fps = [1 1 5 5 1 50 1 1 2 2 10 10 10 10 10 10 10 ...        % 03/01
-    6.667 0 0 0 0 7 7 6.2];                                   % 03/02
+fps = [1 1 5 5 1 50 1 1 2 2 10 10 10 10 10 10 10 ...        % 01 MAR 2011 experiment
+    6.667 0 0 0 0 7 7 6.2];                                   % 02 MAR 2011 experiment
 cmax = [1000 1000 300 300 1000 200 2000 2000 1000 1000 ...
     150 250 250 20 220 250 250 200 300 1 ...
     1 1 300 300 250 ];
@@ -21,17 +21,7 @@ for j = 6, %:length(d0),
         
         datadir = [topdir d0(j).name '/'];
         
-        yy = 2000 + str2num(d0(j).name(1:2));
-        mm = str2num(d0(j).name(3:4));
-        dd = str2num(d0(j).name(5:6));
-        hh = str2num(d0(j).name(8:9));
-        mn = str2num(d0(j).name(10:11));
-        ss = 0;
-        if length(d0(j).name) > 11,
-            ss = 30;
-        end
-        
-        starttime = datenum(yy,mm,dd,hh,mn,ss);
+        starttime = fn2time(d0(j).name);
         
         d = dir([datadir '*.dat']);
         
