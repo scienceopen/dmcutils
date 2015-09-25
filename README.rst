@@ -19,6 +19,8 @@ Caveats
 =======
 The Andor Solis Neo spool file format has changed at least three times. This spool reader is known to work for the 2011-2012 versions (I don't have exact version numbers, but could find out if you need).
 
+For 2008-Spring 2011 spool files, see the ``andor_neo_spool`` directory in this repo.
+
 Experiments:
 ============
 
