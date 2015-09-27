@@ -1,4 +1,4 @@
-% This program is somewhat non-sensical, just use
+% obsolete, just use
 % ../NeoPacked12bitToFITS.m 
 
 % quickly try to read CMOS data (12 bits packed)

@@ -1,4 +1,4 @@
-% not correct program
+% obsolete not correct program
 
 function [flatnorm,dark] = flatdark(flatfn,darkfn,imsize)
 %% dark

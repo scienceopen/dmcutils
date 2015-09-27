@@ -1,4 +1,4 @@
-% this program is somewhat non-sensical,
+% obsolete not used program,
 %  Just use ../NeoPacked12bitToFITS.m
 
 % quickly try to read CMOS data
