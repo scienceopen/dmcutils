@@ -1,3 +1,5 @@
+% obsolete not used function
+
 function fiducial(ax)
 hold(ax,'on')
         
