@@ -1,3 +1,5 @@
+% obsolete not used function
+
 function screen = cornerzero(imsize,docut)      
 % screen to cut off corners
 if docut

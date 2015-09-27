@@ -1,3 +1,4 @@
+% for reference only
 function starttime = fn2time(fn)
 
 yy = 2000 + str2double(fn(1:2));
