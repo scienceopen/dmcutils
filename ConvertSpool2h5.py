@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
     #rawImgData,rawind,ut1_unix = h5toh5(p.path,p.kineticsec,p.startutc)
     rawImgData,rawind,ut1_unix = oldspool(p.path,p.pix,p.bin,p.kineticsec,p.startutc,p.output)
-    dmcconvert(rawImgData,ut1_unix,rawind,p.output,params)
+    dmcconvert(None,ut1_unix,rawind,p.output,params)
 #%% plots and save
     try:
         from matplotlib.pyplot import show
