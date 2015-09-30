@@ -16,18 +16,21 @@ else
 end
 [~,basename] = fileparts(full);
 outfn = expanduser([spooldir,'/',basename,'.h5']);
+disp(['writing to ',outfn])
 %% read
 nfiles = length(datfn);
-data = zeros([ny,nx,nfiles],'uint16');
+%data = zeros([ny,nx,nfiles],'uint16');
 
-for i = 1:nfiles
-    data(:,:,i) = readNeoPacked12bit([spooldir,'/',datfn{i}],nx,ny);
-    fprintf(' %.0f%%',i/length(datfn)*100)   
-end
-%% output hdf5
 h5create(outfn,'/rawimg',[ny,nx,nfiles],'Datatype','uint16',...
          'Deflate',6,'Chunksize',[ny,nx,1])
-h5write(outfn,'/rawimg',data)
+for i = 1:nfiles
+    data = readNeoPacked12bit([spooldir,'/',datfn{i}],nx,ny);
+    fprintf(' %.0f%%',i/length(datfn)*100)   
+    
+    h5write(outfn,'/rawimg',data,[i,i,1],[1,ny,nx])
+end
+%% output hdf5
+
 h5writeatt(outfn,'/rawimg','CLASS',        'IMAGE')
 h5writeatt(outfn,'/rawimg','IMAGE_VERSION','1.2')
 h5writeatt(outfn,'/rawimg','IMAGE_SUBCLASS','IMAGE_GRAYSCALE')

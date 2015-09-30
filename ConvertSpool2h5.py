@@ -5,8 +5,9 @@ Sept 2015
 """
 from __future__ import division,absolute_import
 import h5py
+from warnings import warn
 from os.path import expanduser,join
-from numpy import arange,asarray,empty,int16
+from numpy import arange,asarray,empty,int16,string_,uint8,uint16
 from glob import glob
 #
 from histutils.rawDMCreader import dmcconvert,doPlayMovie,doplotsave
@@ -19,31 +20,52 @@ def h5toh5(fn,kineticsec,startutc):
         data = f['/rawimg'].value
 
     rawind = arange(data.shape[0])+1
-
     ut1 = frame2ut1(startutc,kineticsec,rawind)
 
     return data,rawind,ut1
 
-def oldspool(path,xy,bn,kineticsec,startutc):
+def oldspool(path,xy,bn,kineticsec,startutc,outfn):
+    print('starting Matlab')
     import matlab.engine
-    eng = matlab.engine.start_matlab()
+    eng = matlab.engine.start_matlab("-nojvm")
 
     path = expanduser(path)
-    flist = glob(join(path,'*.dat'))
+    outfn = expanduser(outfn)
+    flist = sorted(glob(join(path,'*.dat')))
     nfile = len(flist)
     print('Found {} .dat files in {}'.format(nfile,path))
 
     nx,ny= xy[0]//bn[0], xy[1]//bn[1]
     data = empty((nfile,ny,nx),dtype=datatype) #NOTE: Assumes one frame per file!
-    for i,f in enumerate(flist):
-       print('processing {}   {} / {}'.format(f,i+1,nfile))
-       datmat = eng.readNeoPacked12bit(f, nx,ny)
-       assert datmat.size == (ny,nx)
-       data[i,...] = asarray(datmat,dtype=datatype)
+    with h5py.File(outfn,'w',libver='latest') as fh5:
+        fimg = fh5.create_dataset('/rawimg',(nfile,ny,nx),
+                                  dtype=uint16,
+                                  compression='gzip',
+                                  compression_opts=4,
+                                  track_times=True)
+        fimg.attrs["CLASS"] = string_("IMAGE")
+        fimg.attrs["IMAGE_VERSION"] = string_("1.2")
+        fimg.attrs["IMAGE_SUBCLASS"] = string_("IMAGE_GRAYSCALE")
+        fimg.attrs["DISPLAY_ORIGIN"] = string_("LL")
+        fimg.attrs['IMAGE_WHITE_IS_ZERO'] = uint8(0)
+
+        for i,f in enumerate(flist):
+            print('processing {}   {} / {}'.format(f,i+1,nfile))
+            try:
+                datmat = eng.readNeoPacked12bit(f, nx,ny)
+                assert datmat.size == (ny,nx)
+                fimg[i,...] = datmat
+            except AssertionError as e:
+                warn('matlab returned improper size array {}'.format(e))
+            except Exception as e:
+                warn('matlab had a problem on frame {}   {}'.format(i,e))
 
     eng.quit()
 
-    return data,None,None
+    rawind = arange(data.shape[0])+1
+    ut1 = frame2ut1(startutc,kineticsec,rawind)
+
+    return data,rawind,ut1
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
@@ -69,8 +91,8 @@ if __name__ == "__main__":
     params = {'kineticsec':p.kineticsec,'rotccw':p.rotccw,'transpose':p.transpose,
               'flipud':p.flipud,'fliplr':p.fliplr,'fire':p.fire}
 
-    rawImgData,rawind,ut1_unix = h5toh5(p.path,p.kineticsec,p.startutc)
-#%% convert
+    #rawImgData,rawind,ut1_unix = h5toh5(p.path,p.kineticsec,p.startutc)
+    rawImgData,rawind,ut1_unix = oldspool(p.path,p.pix,p.bin,p.kineticsec,p.startutc,p.output)
     dmcconvert(rawImgData,ut1_unix,rawind,p.output,params)
 #%% plots and save
     try:
