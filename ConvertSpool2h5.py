@@ -62,7 +62,7 @@ def oldspool(path,xy,bn,kineticsec,startutc,outfn):
 
     eng.quit()
 
-    rawind = arange(data.shape[0])+1
+    rawind = arange(nfile)+1
     ut1 = frame2ut1(startutc,kineticsec,rawind)
 
     return rawind,ut1
@@ -89,6 +89,7 @@ if __name__ == "__main__":
               'flipud':p.flipud,'fliplr':p.fliplr,'fire':p.fire}
 
     if isfile(p.path) and p.path.endswith('.h5'):
+        print('writing metadata')
         rawind,ut1_unix = h5toh5(p.path,p.kineticsec,p.startutc)
     elif isdir(p.path): 
         rawind,ut1_unix = oldspool(p.path,p.pix,p.bin,p.kineticsec,p.startutc,p.output)
