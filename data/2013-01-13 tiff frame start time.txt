@@ -1,0 +1,14 @@
+from dateutil.parser import parse
+from datetime import timedelta
+
+t0 = parse('2013-01-13T21:14:34')
+t = t0 + timedelta(seconds=(38*12427+8300-1)*0.03008434)
+
+Out[5]: datetime.datetime(2013, 1, 14, 1, 15, 30, 277479)
+
+
+python imgAvgfits.py ~/data/neo2013-01-13_X38_frames8300-9500.tif
+
+python fits2azel.py ~/data/neo2013-01-13_X38_frames8300-9500_mean.fits -c 66.986350 -50.943861 -t 2013-01-14T01:45:30
+
+
