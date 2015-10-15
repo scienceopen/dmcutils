@@ -1,9 +1,14 @@
 function expanded = expanduser(p)
 %%
 % For now, handles only a leading tilde, does not currently handle specifying ~otheruser
-% example:
+%
+% isunix==1 (linux & cygwin) example:
 % expanduser('~/Downloads/foo')
 % ans = /home/joespc/Downloads/foo
+%
+% ispc==1 example (Windows)
+% expanduser('~/Downloads/foo')
+% ans = C:\joespc/Downloads/foo
 %
 % Useful for Matlab functions like h5read() and some Computer Vision toolbox functions
 % that can't handle ~ and Matlab does not consider it a bug per conversations with 
