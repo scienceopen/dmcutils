@@ -44,7 +44,7 @@ if ~isempty(p) && ischar(p) && size(p,1) == 1
         expanded = p; 
     end %if
 else
-    warning('i only handle non-array strings for now')
+    warning('i only handle non-array strings for now') %TODO: consider cellfun()
     expanded = p;
 end %if
 
