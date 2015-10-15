@@ -16,6 +16,8 @@ function expanded = expanduser(p)
 %
 % Michael Hirsch
 %
+% tested with Windows, Cygwin, Linux, and WINE
+%
 
 %% what is the home path
 if ispc % windows
@@ -30,8 +32,10 @@ if isempty(home)
     return
 end %if
 %% now let's look at your path, does it have a leading tilde?
-if ischar(p) && size(p,1) == 1
-    if strcmp(p(1:2),'~/') || strcmp(p(1:2),'~\')
+if ~isempty(p) && ischar(p) && size(p,1) == 1
+    if length(p) == 1 && strcmp(p,'~')
+        expanded = home;
+    elseif strcmp(p(1:2),'~/') || strcmp(p(1:2),'~\')
         expanded = [home,p(2:end)];
     elseif ~isempty(regexp(p,'~.*/')) || ~isempty(regexp(p,'~.*\\'))
         warning('the ~otheruser case is not handled yet')
