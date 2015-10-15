@@ -12,16 +12,22 @@ function expanded = expanduser(p)
 % Michael Hirsch
 %
 
-home = getenv('HOME');
+%% what is the home path
+if ispc % windows
+    home = [getenv('HOMEDRIVE'),getenv('HOMEPATH')];
+else %linux,mac
+    home = getenv('HOME');
+end %if
+
 if isempty(home)
     warning('empty HOME environment variable, returning unmodified path')
     expanded =p;
     return
 end %if
-
+%% now let's look at your path, does it have a leading tilde?
 if ischar(p) && size(p,1) == 1
     if strcmp(p(1:2),'~/') || strcmp(p(1:2),'~\')
-        expanded = [getenv('HOME'),p(2:end)];
+        expanded = [home,p(2:end)];
     elseif ~isempty(regexp(p,'~.*/')) || ~isempty(regexp(p,'~.*\\'))
         warning('the ~otheruser case is not handled yet')
         expanded = p;
@@ -29,7 +35,7 @@ if ischar(p) && size(p,1) == 1
         expanded = p; 
     end %if
 else
-    warning('i only handle non-arrays strings for now')
+    warning('i only handle non-array strings for now')
     expanded = p;
 end %if
 
