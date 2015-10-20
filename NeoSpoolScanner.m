@@ -1,10 +1,11 @@
-function AllTick= NeoSpoolScanner(SpoolDir,OutDir,varargin)
-% data = NeoSpoolScanner(SpoolDir,OutDir,nRow,nCol,nFramePerSpoolFile,AOIstride,nSkipFile,nMeanFrames,thumbnailWidth,annotateThumbnails)
-%
+function allTick= NeoSpoolScanner(spoolDir,nx,ny,varargin)
+% Makes montages of large number of 2015 Andor Solis Neo spool files for
+% previewing auroral data, using Octave/Matlab built-in montage() function
+
 % inputs:
 % ------- 
 % SpoolDir: where the 100,000 Neo spool files .dat are located
-% OutDir: where to place output [] to use SpoolDir
+% OutDir: where to place output, [] uses SpoolDir
 % nRow: number of y-pixels in Neo image--default 640
 % nCol: number of x-pixels in Neo image--default 540
 % nFramePerSpoolFile: how many frames are in each spool file--default 11
@@ -14,157 +15,65 @@ function AllTick= NeoSpoolScanner(SpoolDir,OutDir,varargin)
 % annotateThumbnails: add frame number to each thumbnail (default true)
 %
 % designed/tested for Octave 3.6 with Cygwin under Windows 7
-% Michael Hirsch
+% Michael Hirsch Oct 2012
 % tested to take 5 minutes overall for a 21,000 file directory, taking every 100th file i.e. touching 210 files with mean of all frames in these files.
 
-if ~ismatlab
-    pkg load image
+try %for Octave
     page_screen_output(0);
     page_output_immediately(1);
 end
-
-if isempty(OutDir), OutDir = SpoolDir; end
-
-P = length(varargin);
-if P>0 && ~isempty(varargin{1}), nRow = varargin{1}; nCol = varargin{2}; 
-    else nRow = 640, nCol = 540, end
-if P>2 && ~isempty(varargin{3}), nFramePerSpoolFile = varargin{3}; 
-    else nFramePerSpoolFile = 11, end
-if P>3 && ~isempty(varargin{4}), AOIstride = varargin{4}; 
-    else AOIstride = 8, end
-if P>4 && ~isempty(varargin{5}), nSkipFile = varargin{5}; 
-    else nSkipFile = 100; end
-
-if P>5 && varargin{6}>0 && varargin{6}<=nFramePerSpoolFIle
-       nMeanFrames = varargin{6}; 
-       else 
-       nMeanFrames = nFramePerSpoolFile; 
-end
-
-if P>6 && ~isempty(varargin{7}), thumbnailWidth = varargin{7}; 
- else thumbnailWidth = 128; end
- 
-if P>7 && ~isempty(varargin{8}), annotateThumbnails = varargin{8}; 
-else annotateThumbnails=true; end
-
-
-TempExt = '.tiff'; %'.png';
-
-nRowRaw = nRow + AOIstride;
-
-dTemplate = [SpoolDir,'/*.dat'];
-display(['searching directory for: ',dTemplate])
+%% user parameters
+p = inputParser;
+addOptional(p,'outdir',spoolDir)
+addOptional(p,'nFrameSpool',12) % for 2012-2013 Solis, was 11 ...
+addOptional(p,'AOIstride',8) %always 8?
+addOptional(p,'colfirst',true) %false for 2012-2013 Solis?, true for 2015 Solis
+addOptional(p,'thumbnailwidth',128) %for montage, each image
+addOptional(p,'skipNfile',10) %every Nth file
+parse(p,varargin{:})
+U = p.Results;
+%% get file list
+dTemplate = [spoolDir,'/*spool.dat'];
+display(['searching: ',dTemplate])
 tic
-%SpoolFN = dir(dTemplate); %<-- Very slow for 100,000 files!
+flist = dir(dTemplate); %<-- Very slow for 100,000 files!
 %use linux to vastly speed up work
-[err,SpoolFN2] = unix(['ls ',SpoolDir]);
-if err, error(['Could not stat ',SpoolDir]), end
-SpoolFN2 = textscan(SpoolFN2,'%s'); 
-SpoolFN2 = SpoolFN2{1};
-nSpoolFile = length(SpoolFN2);
-display(['Retrieved list of ',int2str(nSpoolFile),' spool files in ',...
+%[err,SpoolFN2] = unix(['ls ',spoolDir]);
+%if err, error(['Could not stat ',spoolDir]), end
+%SpoolFN2 = textscan(SpoolFN2,'%s'); 
+%SpoolFN2 = SpoolFN2{1};
+nSpool = length(flist);
+display(['Retrieved list of ',int2str(nSpool),' spool files in ',...
 		num2str(toc,'%0.1f'),' seconds'])
-display(['Estimated time to make thumbnail preview montage: ',num2str(nSpoolFile/nSkipFile*300/200 / 60,'%0.1f'),' MINUTES. Have a coffee while waiting.'])
-%SpoolFN2 = {SpoolFN.name};
+flist={flist.name};
 
-
-fInd = 1:nSkipFile:nSpoolFile;
+fInd = 1:U.skipNfile:nSpool;
 nFrameSamp = length(fInd);
-AllTick = zeros(nFrameSamp,1,'uint64');
+allTick = zeros(nFrameSamp,1,'uint64');
 
-%tempDir = [SpoolDir,'/temp'];
-tempDir = '/dev/shm/temp';
-mkdir(tempDir);
-delete([tempDir,'/*-*spool',TempExt])
-
-display(['Writing ',int2str(nFrameSamp),' sample frames'])
-
-if ismatlab
-	dataPrefix = '';
-else %is cygwin/octave
-	dataPrefix = [SpoolDir,'/'];
-end
-
-%take first frame of every 10th file (i.e. every 110th frame)
+%take first frame of every Nth file (i.e. every (P*N)th frame)
 tic
-updateInd = 1;
+j = 1;
 for i = fInd
-	if mod(updateInd,10)==0, display([num2str(i/fInd(end)*100,'%0.1f'),'% complete']), end
+	if mod(j,10)==0, display([num2str(i/fInd(end)*100,'%0.1f'),'% complete']), end
 
-    data = zeros(nRow,nCol,nFramePerSpoolFile,'uint16');
-    tick64 = zeros(nFramePerSpoolFile,1,'uint64');
+    data = zeros(ny,nx,1,nFrameSamp,'uint16');
 
-    %currFile = [SpoolDir,'/',SpoolFN2{i}]; %when using Matlab/Octave dir()
-    currFile = [dataPrefix,SpoolFN2{i}]; % when using linux ls
-    fid = fopen(currFile);
-    
-    if fid>0 && strcmp(currFile(end-3:end),'.dat')
-	for j = 1:nMeanFrames
-
-	    %read sample frame from spool data
-	    currData = fread(fid,[nRowRaw nCol],'uint16=>uint16',0,'l');
-	    %clean zeros out of data
-	    data(:,:,j) = currData(1:nRow,:);
-	    %get FPGA tick index
-	    tick64(j) = NeoSpoolHeader(fid,nRowRaw);
-    end
+    [d,t] = readNeoSpool([spoolDir,filesep,flist{i}],nx,ny,'nFrame',U.nFrameSpool);
     
     %do mean of frames (time averaging)
-    data = mean(data,3); %note this is now class double float!
+    data(:,:,1,j) = mean(d,3); %note this is now class double float!
 
+    %keep track of ticks
+    allTick((j-1)*U.nFrameSpool+1 : j*U.nFrameSpool) = t;
 
-    [~,SpoolName] = fileparts(currFile);
-    
-% write thumbnails to disk-using lossless TIF-Packbits -- do not use PNG due to
-% RGB colorspace problems (we want grayscale DirectClass)
-thumbTick = [tempDir,'/',sprintf('%015d',tick64(1))];
-thumbFN =       [thumbTick,'-',SpoolName,TempExt];
-thumbFNanno =   [thumbTick,'-anno-',SpoolName,TempExt];
-
-%note: Octave 3.6 doesn't handle imwrite Compression input parameter!
-imwrite(imresize(uint16(data),thumbnailWidth/nCol),thumbFN)
-
-% <debug> = ====
-
-%unix(['identify ',thumbFN]);
-% =============
-
-% add frame # to thumbnails
-if annotateThumbnails
-    labeltext = [' -fill black -font Courier-New-Regular',...
-	   ' -pointsize 13 -gravity north -annotate 0 "',sprintf('%015d',tick64(1)),'" '];
-    %labeltext = ''; %<debug>
-    
-    mogCmd = ['convert ',thumbFN,labeltext,...
-        ' -type GrayScale -colorspace Gray -depth 16 ',thumbFNanno];
-    
-    if mod(updateInd,50)==0,  display(mogCmd),    end
-    mogErr = unix(mogCmd);
-    
-    if mogErr, warning(['Could not add labels to ',thumbFNanno]), end
-end
-  
-    else
-        warning(['file ',currFile,' was unreadable'])
-    end %fid>0
-    try fclose(fid); end
-
-%keep track of ticks
-AllTick((updateInd-1)*nFramePerSpoolFile+1:updateInd*nFramePerSpoolFile) = tick64;
-
-updateInd = updateInd+1;
+    j = j+1;
 end %for i
 
-elapsed = toc;
-DiffTick = diff(sort(AllTick));
+DiffTick = diff(sort(allTick));
 
-%try
-%figure(1),hist(DiffTick,128),set(gca,'yscale','log')
-%end
-
-display(['Made thumbnails in ',num2str(elapsed,'%0.1f'),' seconds.'])
-display('Making 16-bit montage')
-display(['Biggest gap between Neo FPGA ticks was ',int2str(max(DiffTick))])
+disp(['Biggest gap between Neo FPGA ticks was ',int2str(max(DiffTick))])
+disp(['tick mode: ',int2str(mode(DiffTick))])
 %% make montage
 
 %make filename
@@ -172,8 +81,8 @@ display(['Biggest gap between Neo FPGA ticks was ',int2str(max(DiffTick))])
 %based off of: http://www.regular-expressions.info/dates.html
 try
 dateRegStr = '(19|20)\d\d([- /.])(0[1-9]|1[012])\2(0[1-9]|[12][0-9]|3[01])';
-[dstri dstpi] = regexp(SpoolDir,dateRegStr,'start','end');
-dateStrg = SpoolDir(dstri(end):dstpi(end));
+[dstri dstpi] = regexp(spoolDir,dateRegStr,'start','end');
+dateStrg = spoolDir(dstri(end):dstpi(end));
 catch %oops, we forgot to use a date when saving spool files
 dateStrg='unknownDate';
 end

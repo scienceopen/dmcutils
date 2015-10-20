@@ -7,7 +7,7 @@ nFrame = size(data,3);
 %% histogram
 if showhist
     figure(2),clf(2)
-    hist(single(data(:)),128),set(gca,'yscale','log')
+    hist(single(data(:)),nBin),set(gca,'yscale','log')
     title(['Histogram of ',spoolfn,' ',int2str(nBin),' bins'])
     xlabel('data number'), ylabel('occurences')
 end
