@@ -4,15 +4,13 @@ function allTick= NeoSpoolScanner(spoolDir,nx,ny,varargin)
 
 % inputs:
 % ------- 
-% SpoolDir: where the 100,000 Neo spool files .dat are located
-% OutDir: where to place output, [] uses SpoolDir
-% nRow: number of y-pixels in Neo image--default 640
-% nCol: number of x-pixels in Neo image--default 540
+% spoolDir: where the 100,000 Neo spool files .dat are located
+% outDir: where to place output, [] uses SpoolDir
+% ny: number of y-pixels in Neo image--default 640
+% nx: number of x-pixels in Neo image--default 540
 % nFramePerSpoolFile: how many frames are in each spool file--default 11
 % nSkipFile: take every Nth file, IN ORDER OF FILE NAME--WHICH IS NOT NECESSARILY TIME ORDER!!
-% nMeanFrames: to average frames in each spool file for each thumbnail (trying to boost SNR) default nFramePerSpoolFile
 % thumbnailWidth: width of thumbnails in pixels (default 128)
-% annotateThumbnails: add frame number to each thumbnail (default true)
 %
 % designed/tested for Octave 3.6 with Cygwin under Windows 7
 % Michael Hirsch Oct 2012
@@ -48,21 +46,25 @@ display(['Retrieved list of ',int2str(nSpool),' spool files in ',...
 flist={flist.name};
 
 fInd = 1:U.skipNfile:nSpool;
-nFrameSamp = length(fInd);
-allTick = zeros(nFrameSamp,1,'uint64');
+nFile = length(fInd);
+allTick = zeros(nFile*U.nFrameSpool,1,'uint64');
 
-%take first frame of every Nth file (i.e. every (P*N)th frame)
-tic
+data = zeros(ny,nx,1,nFile,'uint16');
 j = 1;
+tic
 for i = fInd
 	if mod(j,10)==0, display([num2str(i/fInd(end)*100,'%0.1f'),'% complete']), end
 
-    data = zeros(ny,nx,1,nFrameSamp,'uint16');
-
-    [d,t] = readNeoSpool([spoolDir,filesep,flist{i}],nx,ny,'nFrame',U.nFrameSpool);
+    [d,t] = readNeoSpool([spoolDir,'/',flist{i}],nx,ny,'nFrame',U.nFrameSpool);
     
     %do mean of frames (time averaging)
-    data(:,:,1,j) = mean(d,3); %note this is now class double float!
+    if nFile>1
+        data(:,:,1,j) = mean(d,3); 
+    else %montage of single file
+        for ii = 1:size(d,3)
+            data(:,:,1,ii) = d(:,:,ii);
+        end
+    end
 
     %keep track of ticks
     allTick((j-1)*U.nFrameSpool+1 : j*U.nFrameSpool) = t;
@@ -70,77 +72,35 @@ for i = fInd
     j = j+1;
 end %for i
 
-DiffTick = diff(sort(allTick));
+dTick = diff(allTick);
 
-disp(['Biggest gap between Neo FPGA ticks was ',int2str(max(DiffTick))])
-disp(['tick mode: ',int2str(mode(DiffTick))])
-%% make montage
+disp(['Biggest gap between Neo FPGA ticks was ',int2str(max(dTick))])
+disp(['tick mode: ',int2str(mode(dTick))])
 
-%make filename
+%% make filename
 
 %based off of: http://www.regular-expressions.info/dates.html
 try
-dateRegStr = '(19|20)\d\d([- /.])(0[1-9]|1[012])\2(0[1-9]|[12][0-9]|3[01])';
-[dstri dstpi] = regexp(spoolDir,dateRegStr,'start','end');
-dateStrg = spoolDir(dstri(end):dstpi(end));
+    dateRegStr = '(19|20)\d\d([- /.])(0[1-9]|1[012])\2(0[1-9]|[12][0-9]|3[01])';
+    [dstri, dstpi] = regexp(spoolDir,dateRegStr,'start','end');
+    dateStrg = spoolDir(dstri(end):dstpi(end));
 catch %oops, we forgot to use a date when saving spool files
-dateStrg='unknownDate';
+    dateStrg='unknownDate';
 end
-MontPrefix = ['montage-neo-',dateStrg,'-step',int2str(nSkipFile)];
 
-MontFN =        [OutDir,'/',MontPrefix,'-16bit.png'];
-MontFNanno =    [OutDir,'/',MontPrefix,'-anno-16bit.png'];
-
-[~,montFNkern] = fileparts(MontFNanno);
-MontFNannoText = [OutDir,'/',montFNkern,'.txt'];
+MontPrefix = ['montage-neo-',dateStrg,'-step',int2str(U.skipNfile)];
+montfn = [U.outdir,'/',MontPrefix,'.png'];
+[~,basemont] = fileparts(montfn);
+matfn = [U.outdir,'/',basemont,'.mat'];
 
 %save ticks
-display(['saving parameter file: ',MontFNannoText])
-save(MontFNannoText,'MontFNanno','AllTick','SpoolFN2','nSkipFile')
+disp(['saving parameter file: ',matfn])
+save(matfn,'allTick','flist')
 
-%=========annotated montage
-montCmd = ['montage ',tempDir,'/*-anno-*spool',TempExt,' ',...
-	' -geometry +0+0 -tile 10x -background black ',...
-	MontFNanno];
-  
-display(montCmd)
+%% create montage image
+clim = prctile(single(data(:)),[1,99.9]); % single() needed for Matlab R2015b et al
 
-err = unix(montCmd);
+h=montage(data,'DisplayRange',clim);
 
-%add comment
-textCmd = ['mogrify -set comment "',MontFNannoText,'" ',MontFNanno];
-err(2) = unix(textCmd);
-if err, error('Could not make 16-bit annotated montage'), end
-
-%====non-annotated montage
-%montCmd = ['montage ',tempDir,'/*-anno-*spool',TempExt,' ',...
-%      ' -geometry +0+0 -tile 10x -background black ',...
-%        MontFN];
-  
-%display(montCmd)
-
-%err = unix(montCmd);
-%if err, error('Could not make 16-bit montage'), end
-
-
-
-display('Making 8-bit (labeled) montage via command:')
-%make 8-bit montage for convenience
-Mont8FN = [OutDir,'/',MontPrefix,'-anno-8bit.png'];
-convCmd = ['convert ',MontFNanno,...
-       ' -contrast-stretch 3%x0.1% -depth 8 ',...
-         Mont8FN];
-
-display(convCmd)
-
-unix(convCmd);
-
-%cleanup RAM drive temp files
-delete([tempDir,'/*-*spool.tiff'])
-
-fprintf( '\n*************************************')
-fprintf(['\n* Finished at: ',datestr(now),' *'])
-fprintf( '\n*************************************\n')
-
-
-end
+if ~nargout,clear,end
+end %function
