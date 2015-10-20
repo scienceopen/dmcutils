@@ -1,6 +1,10 @@
 function allTick= NeoSpoolScanner(spoolDir,nx,ny,varargin)
 % Makes montages of large number of 2015 Andor Solis Neo spool files for
-% previewing auroral data, using Octave/Matlab built-in montage() function
+% previewing auroral data, using Octave/Matlab built-in montage() function.
+
+% NOTE: If using Octave 4.0 with Image 2.4.1, you'll need my patch to make
+% montage() DisplayRange work:
+% https://savannah.gnu.org/bugs/index.php?46259
 
 % inputs:
 % ------- 
@@ -17,6 +21,7 @@ function allTick= NeoSpoolScanner(spoolDir,nx,ny,varargin)
 % tested to take 5 minutes overall for a 21,000 file directory, taking every 100th file i.e. touching 210 files with mean of all frames in these files.
 
 try %for Octave
+    pkg load image
     page_screen_output(0);
     page_output_immediately(1);
 end
@@ -55,7 +60,7 @@ tic
 for i = fInd
 	if mod(j,10)==0, display([num2str(i/fInd(end)*100,'%0.1f'),'% complete']), end
 
-    [d,t] = readNeoSpool([spoolDir,'/',flist{i}],nx,ny,'nFrame',U.nFrameSpool);
+    [d,t] = readNeoSpool([spoolDir,'/',flist{i}],nx,ny,U.nFrameSpool);
     
     %do mean of frames (time averaging)
     if nFile>1
@@ -98,8 +103,8 @@ disp(['saving parameter file: ',matfn])
 save(matfn,'allTick','flist')
 
 %% create montage image
-clim = prctile(single(data(:)),[1,99.9]); % single() needed for Matlab R2015b et al
-
+clim = prctile(single(data(:)).',[1,99.9]); % single() needed for Matlab R2015b et al, .' needed for Octave 4.0
+disp(['climming montage to ',num2str(clim)])
 h=montage(data,'DisplayRange',clim);
 
 if ~nargout,clear,end
