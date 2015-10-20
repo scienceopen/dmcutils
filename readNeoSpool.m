@@ -10,7 +10,6 @@ U = p.Results;
 
 finf = dir(spoolfn);
 
-
 if U.colfirst
     freadshape = [nx+U.AOIstride, ny];
 else
