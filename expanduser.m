@@ -16,9 +16,14 @@ function expanded = expanduser(p)
 %
 % Michael Hirsch
 %
-% tested with Windows, Cygwin, Linux, and WINE
+% tested with Matlab and Octave on Windows, Cygwin, Linux, and WINE
 %
-
+%% try python first
+try %requires Matlab R2014b or newer for following line
+    expanded = char(py.os.path.expanduser(p));
+    return
+end
+%% if you have old Matlab or Octave
 %% what is the home path
 if ispc % windows
     home = [getenv('HOMEDRIVE'),getenv('HOMEPATH')];
@@ -37,9 +42,9 @@ if ~isempty(p) && ischar(p) && size(p,1) == 1
         expanded = home;
     elseif strcmp(p(1:2),'~/') || strcmp(p(1:2),'~\')
         expanded = [home,p(2:end)];
-    elseif ~isempty(regexp(p,'~.*/')) || ~isempty(regexp(p,'~.*\\'))
-        warning('the ~otheruser case is not handled yet')
-        expanded = p;
+    elseif ~isempty(regexp(p,'~.*/', 'once')) || ~isempty(regexp(p,'~.*\\', 'once'))
+            warning('the ~otheruser case is not handled yet')
+            expanded = p;
     else
         expanded = p; 
     end %if

@@ -1,4 +1,4 @@
-function allTick= NeoSpoolScanner(spoolDir,nx,ny,varargin)
+function [mont,allTick] = NeoMontage(spoolDir,nx,ny,varargin)
 % Makes montages of large number of 2015 Andor Solis Neo spool files for
 % previewing auroral data, using Octave/Matlab built-in montage() function.
 
@@ -27,18 +27,25 @@ try %for Octave
 end
 %% user parameters
 p = inputParser;
-addOptional(p,'outdir',spoolDir)
-addOptional(p,'nFrameSpool',12) % for 2012-2013 Solis, was 11 ...
-addOptional(p,'AOIstride',8) %always 8?
-addOptional(p,'colfirst',true) %false for 2012-2013 Solis?, true for 2015 Solis
-addOptional(p,'thumbnailwidth',128) %for montage, each image
-addOptional(p,'skipNfile',10) %every Nth file
+addParamValue(p,'outdir',spoolDir)
+addParamValue(p,'nFrameSpool',12) %#ok<*NVREPL> % for 2012-2013 Solis, was 11 ...
+addParamValue(p,'AOIstride',8) %always 8?
+addParamValue(p,'colfirst',true) %false for 2012-2013 Solis?, true for 2015 Solis
+addParamValue(p,'thumbnailwidth',128) %for montage, each image
+addParamValue(p,'skip',10) %every Nth file (or frame if fits)
+addParamValue(p,'fits',false) %use FITS files instead of *spool.dat
 parse(p,varargin{:})
 U = p.Results;
 %% get file list
-dTemplate = [spoolDir,'/*spool.dat'];
-display(['searching: ',dTemplate])
-tic
+if U.fits
+    dTemplate = [spoolDir,'/*.fits'];
+    skipfile = 1;
+else %spool files
+    dTemplate = [spoolDir,'/*spool.dat'];
+    skipfile = U.skip;
+end %if
+
+disp(['searching: ',dTemplate])
 flist = dir(dTemplate); %<-- Very slow for 100,000 files!
 %use linux to vastly speed up work
 %[err,SpoolFN2] = unix(['ls ',spoolDir]);
@@ -46,33 +53,37 @@ flist = dir(dTemplate); %<-- Very slow for 100,000 files!
 %SpoolFN2 = textscan(SpoolFN2,'%s'); 
 %SpoolFN2 = SpoolFN2{1};
 nSpool = length(flist);
-display(['Retrieved list of ',int2str(nSpool),' spool files in ',...
-		num2str(toc,'%0.1f'),' seconds'])
+if ~nSpool, error(['no files found with ',dTemplate]), end
+
+display(['Retrieved list of ',int2str(nSpool),' files'])
 flist={flist.name};
 
-fInd = 1:U.skipNfile:nSpool;
+fInd = 1:skipfile:nSpool;
 nFile = length(fInd);
-allTick = zeros(nFile*U.nFrameSpool,1,'uint64');
+allTick = zeros(nFile,1,'uint64'); %for many files case, OK
 
 data = zeros(ny,nx,1,nFile,'uint16');
-j = 1;
+j = 1; 
+t=0; %for fits case
 tic
 for i = fInd
 	if mod(j,10)==0, display([num2str(i/fInd(end)*100,'%0.1f'),'% complete']), end
-
-    [d,t] = readNeoSpool([spoolDir,'/',flist{i}],nx,ny,U.nFrameSpool);
-    
+    f = [spoolDir,'/',flist{i}];
+    if U.fits
+        d = readFrame(f,U.skip);
+    else
+        [d,t] = readNeoSpool([spoolDir,'/',flist{i}],nx,ny,U.nFrameSpool);
+    end
     %do mean of frames (time averaging)
     if nFile>1
         data(:,:,1,j) = mean(d,3); 
+        allTick(j) = t(1); %NOTE: chose to take first frame index averaged as tick number.
     else %montage of single file
         for ii = 1:size(d,3)
             data(:,:,1,ii) = d(:,:,ii);
         end
+        allTick((j-1)*U.nFrameSpool+1 : j*U.nFrameSpool) = t;
     end
-
-    %keep track of ticks
-    allTick((j-1)*U.nFrameSpool+1 : j*U.nFrameSpool) = t;
 
     j = j+1;
 end %for i
@@ -93,19 +104,30 @@ catch %oops, we forgot to use a date when saving spool files
     dateStrg='unknownDate';
 end
 
-MontPrefix = ['montage-neo-',dateStrg,'-step',int2str(U.skipNfile)];
+MontPrefix = ['montage-neo-',dateStrg,'-step',int2str(skipfile)];
 montfn = [U.outdir,'/',MontPrefix,'.png'];
 [~,basemont] = fileparts(montfn);
-matfn = [U.outdir,'/',basemont,'.mat'];
+matfn = [U.outdir,'/',basemont,'.txt'];
 
-%save ticks
+%% save ticks
 disp(['saving parameter file: ',matfn])
-save(matfn,'allTick','flist')
 
+fid = fopen(matfn,'w');
+fprintf(fid,'%s\n','tick filename')
+for i = 1:length(flist)
+    fprintf(fid,'%d %s\n',allTick(i),flist{i});
+end
+fclose(fid);
 %% create montage image
 clim = prctile(single(data(:)).',[1,99.9]); % single() needed for Matlab R2015b et al, .' needed for Octave 4.0
 disp(['climming montage to ',num2str(clim)])
-h=montage(data,'DisplayRange',clim);
+
+fg = figure('visible','off'); %for remote ops
+%ax=axes('parent',fg); %doesn't work with Octave 4.0 for visible or invisible
+h=montage(data,'DisplayRange',clim); %no parent for Octave 4.0
+mont = get(h,'CData'); %NOTE: Octave 4.0 needs HG1 call
+disp(['saving montage ',montfn])
+print(fg,montfn,'-dpng')
 
 if ~nargout,clear,end
 end %function
