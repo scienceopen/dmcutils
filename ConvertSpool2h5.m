@@ -1,8 +1,11 @@
 function ConvertSpool2h5(varargin)
-% given a Neo 12bit packed spool directory (with the corrupted 2008 Andor Solis
-% beta files) read all the images in that directory and convert to FITS
+% given a Neo 
+% * 12bit packed spool directory (with the corrupted 2008 Andor Solis beta files) 
+% * 16bit 2012-2015 spool file
+% read all the images in that directory and convert to HDF5
 % That is, very many .dat spool files from a single directory are converted to
-% one big FITS file, readable in ImageJ, etc.
+% one big HDF5 file.
+%
 % Michael Hirsch
 %
 % CAVEAT: h5create() does not allow for compound dataset create, you have
@@ -16,6 +19,7 @@ addRequired(p,'kineticsec')
 addOptional(p,'nx',2544)
 addOptional(p,'ny',2160)
 addOptional(p,'lla',[65.1186367, -147.432975, 500.])
+addParamValue(p,'bits',16)
 parse(p,varargin{:})
 U = p.Results;
 
@@ -42,7 +46,15 @@ nfiles = length(datfn);
 h5create(outfn,'/rawimg',[U.nx,U.ny,nfiles],'Datatype','uint16',...
          'Deflate',6,'Chunksize',[U.nx,U.ny,1],'shuffle',true)
 for i = 1:nfiles
-    data = readNeoPacked12bit([U.spooldir,'/',datfn{i}],U.nx,U.ny);
+    f = [U.spooldir,'/',datfn{i}]
+    if bits==16
+        data = readNeoSpool(f,U.nx,U.ny);
+    elseif bits==12
+        data = readNeoPacked12bit(f,U.nx,U.ny);
+    else
+        error(['unknown bit depth ',int2str(bits)])
+    end %if
+
     disp([int2str(i),' / ',int2str(nfiles)])  
     
     h5write(outfn,'/rawimg',transpose(data),[1,1,i],[U.nx,U.ny,1])
