@@ -9,7 +9,7 @@ app = Flask(__name__)
 @app.route('/')
 def static_file():
     return send_from_directory('./',
-                               'live.png',
+                               'latest.png',
                                as_attachment=False)
 
 if __name__ == '__main__':
