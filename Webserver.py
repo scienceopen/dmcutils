@@ -13,4 +13,9 @@ def static_file():
                                as_attachment=False)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    from argparse import ArgumentParser
+    p = ArgumentParser()
+    p.add_argument('port',help='port number',type=int)
+    p = p.parse_args()
+
+    app.run(host='0.0.0.0',p.port)
