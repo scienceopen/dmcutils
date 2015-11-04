@@ -5,7 +5,7 @@ nx=$2
 ny=$3
 [[ -d $root ]] || { echo "$root not a directory"; exit 1; }
 
-python Webserver.py
+python Webserver.py 8088
 
 for i in {0..360}; do
     pythonwin live_preview_neospool.py $root $nx $ny
