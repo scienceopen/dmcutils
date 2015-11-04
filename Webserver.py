@@ -18,4 +18,4 @@ if __name__ == '__main__':
     p.add_argument('port',help='port number',type=int)
     p = p.parse_args()
 
-    app.run(host='0.0.0.0',p.port)
+    app.run(host='0.0.0.0',port=p.port)
