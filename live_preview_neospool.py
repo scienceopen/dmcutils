@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import division,absolute_import
+from six import PY2
 #import logging
 from datetime import datetime
 from pytz import UTC
@@ -8,6 +9,7 @@ from glob import glob
 from numpy import uint16,uint32,fromfile,empty,percentile
 from scipy.misc import imsave,bytescale
 import cv2
+if PY2: FileNotFoundError = IOError
 
 datatype=uint16
 stride=8 #rows for header, mostly zeros
