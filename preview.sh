@@ -11,7 +11,7 @@ ret=$?
 [[ $ret -ne 0 ]] && { echo "server already running?"; exit $ret; }
 
 while :; do
-    pythonwin live_preview_neospool.py $root $nx $ny 2>>$HOME/live.log
+    /cygdrive/c/Anaconda/python -u live_preview_neospool.py $root $nx $ny 2>>$HOME/live.log
     ret=$?
     [[ $ret -ne 0 ]] && { echo "python program error"; exit $ret; }
     sleep 600
