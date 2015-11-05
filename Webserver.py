@@ -2,9 +2,11 @@
 from __future__ import absolute_import
 #
 from flask import Flask, send_from_directory
+from flask_limiter import Limiter
 
 #%%
 app = Flask(__name__)
+limiter = Limiter(app,global_limits=["2/minute","1/second"])
 
 @app.route('/')
 def static_file():
