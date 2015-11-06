@@ -12,9 +12,7 @@ try:
 except:
     pass  #fall back to scipy imsave, no time annotation
 
-
 datatype=uint16
-zerorows=8 #rows between image and header, all zeros, for 2015 Solis
 
 def findnewest(path):
     assert path, '{} is empty'.format(path)
@@ -49,7 +47,7 @@ def getframesize(path,inifn):
 
     return nxy,Nframe,stride,framebytes
 
-def readNeoSpool(fn,inifn):
+def readNeoSpool(fn,inifn,zerorows=8):
     #%% parse header
     nxy,Nframe,stridebytes,framebytes = getframesize(fn,inifn)
     """ 16 bit """
