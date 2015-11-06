@@ -2,7 +2,6 @@
 from __future__ import division,absolute_import
 import logging
 from pathlib2 import Path
-#import logging=
 from pandas import read_csv
 from datetime import datetime
 from pytz import UTC
@@ -57,7 +56,7 @@ def readNeoSpool(fn):
 #    nimg   = nx * ny
     npixframe = (nx+zerorows)*ny
 
-    assert framebytes == (npixframe * datatype(0).itemsize) + +stridebytes
+    assert framebytes == (npixframe * datatype(0).itemsize) + stridebytes
     filebytes = fn.stat().st_size
     if Nframe != filebytes // framebytes:
         logging.warning('file may be read incorrectly')
