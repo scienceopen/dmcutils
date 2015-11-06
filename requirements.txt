@@ -1,0 +1,7 @@
+setuptools
+nose
+six
+python-dateutil
+pytz
+scikit-image
+numpy
