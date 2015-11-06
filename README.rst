@@ -7,9 +7,17 @@ Example of dealing with 100000 - 1 million Andor Neo spool files in a fast way (
 
 .. contents::
 
-Requirements:
+Requirements
 =============
 `GNU Octave 4.0+ <http://www.gnu.org/software/octave/>`_ or Matlab R2014b+
+
+Installation
+============
+::
+
+    git clone http://github.com/scienceopen/dmcutils
+    conda install --file requirements.txt
+    python setup.py develop
 
 Functions
 =========
