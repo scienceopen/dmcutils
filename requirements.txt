@@ -1,0 +1,9 @@
+setuptools
+nose 
+six
+python-dateutil
+pytz
+pandas
+h5py
+scikit-image
+matplotlib
