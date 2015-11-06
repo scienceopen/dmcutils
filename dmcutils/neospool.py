@@ -4,13 +4,17 @@ import logging
 from pandas import read_csv
 from datetime import datetime
 from pytz import UTC
-from numpy import uint16,uint64,fromfile,empty,percentile
+from numpy import uint16,uint64,fromfile,empty,percentile,arange,string_,uint8
 from scipy.misc import bytescale,imsave
 from os import makedirs
+import h5py
 try:
     import cv2
 except:
     pass  #fall back to scipy imsave, no time annotation
+#
+from histutils.timedmc import frame2ut1
+
 
 datatype=uint16
 
@@ -93,3 +97,60 @@ def annowrite(I,newfn,pngfn):
         cv2.imwrite(str(pngfn),I) #if using color, remember opencv requires BGR color order
     except NameError:
         imsave(str(pngfn),I)
+
+def oldspool(path,xy,bn,kineticsec,startutc,outfn):
+    """
+    for old 2011 solis with defects 12 bit, big endian, little endian alternating
+    """
+    print('starting Matlab')
+    import matlab.engine
+    eng = matlab.engine.start_matlab("-nojvm")
+
+    path =  Path(path).expanduser()
+    outfn = Path(outfn).expanduser()
+    flist = sorted(path.glob('*.dat'))
+    nfile = len(flist)
+    print('Found {} .dat files in {}'.format(nfile,path))
+
+    nx,ny= xy[0]//bn[0], xy[1]//bn[1]
+
+    with h5py.File(str(outfn),'w',libver='latest') as fh5:
+        fimg = fh5.create_dataset('/rawimg',(nfile,ny,nx),
+                                  dtype=uint16,
+                                  compression='gzip',
+                                  compression_opts=4,
+                                  track_times=True)
+        fimg.attrs["CLASS"] = string_("IMAGE")
+        fimg.attrs["IMAGE_VERSION"] = string_("1.2")
+        fimg.attrs["IMAGE_SUBCLASS"] = string_("IMAGE_GRAYSCALE")
+        fimg.attrs["DISPLAY_ORIGIN"] = string_("LL")
+        fimg.attrs['IMAGE_WHITE_IS_ZERO'] = uint8(0)
+
+        for i,f in enumerate(flist):
+            print('processing {}   {} / {}'.format(f,i+1,nfile))
+            try:
+                datmat = eng.readNeoPacked12bit(f, nx,ny)
+                assert datmat.size == (ny,nx)
+                fimg[i,...] = datmat
+            except AssertionError as e:
+                logging.critical('matlab returned improper size array {}'.format(e))
+            except Exception as e:
+                logging.critical('matlab had a problem on frame {}   {}'.format(i,e))
+
+    eng.quit()
+
+    rawind = arange(nfile)+1
+    ut1 = frame2ut1(startutc,kineticsec,rawind)
+
+    return rawind,ut1
+
+
+def h5toh5(fn,kineticsec,startutc):
+    fn = Path(fn).expanduser()
+    with h5py.File(str(fn),'r',libver='latest') as f:
+        data = f['/rawimg']
+
+        rawind = arange(data.shape[0])+1
+    ut1 = frame2ut1(startutc,kineticsec,rawind)
+
+    return rawind,ut1
