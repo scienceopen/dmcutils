@@ -12,7 +12,7 @@ limiter = Limiter(app,global_limits=["2/minute","1/second"])
 
 @app.route('/')
 def static_file():
-    return send_from_directory('./',
+    return send_from_directory('./html/',
                                'latest.png',
                                as_attachment=False)
 
