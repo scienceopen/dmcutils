@@ -7,8 +7,11 @@ from pandas import read_csv
 from datetime import datetime
 from pytz import UTC
 from numpy import uint16,uint64,fromfile,empty,percentile
-from scipy.misc import bytescale
-import cv2
+from scipy.misc import bytescale,imsave
+try:
+    import cv2
+except:
+    pass  #fall back to scipy imsave, no time annotation
 
 datatype=uint16
 zerorows=8 #rows between image and header, all zeros, for 2015 Solis
@@ -80,12 +83,14 @@ def mean16to8(I):
     return bytescale(fmean,cmin=l,cmax=h)
 
 def annowrite(I):
-    cv2.putText(I, text=datetime.fromtimestamp(newfn.stat().st_mtime,tz=UTC).strftime('%x %X'), org=(3,35),
+    try:
+        cv2.putText(I, text=datetime.fromtimestamp(newfn.stat().st_mtime,tz=UTC).strftime('%x %X'), org=(3,35),
             fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.2,
             color=(255,255,255), thickness=2)
 #%% write to disk
-    cv2.imwrite('latest.png',f8bit) #if using color, remember opencv requires BGR color order
-
+        cv2.imwrite('latest.png',I) #if using color, remember opencv requires BGR color order
+    except NameError:
+        imsave('latest.png',I)
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
