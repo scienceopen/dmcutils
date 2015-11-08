@@ -71,7 +71,7 @@ def readNeoSpool(fn,inifn,zerorows=8):
 
     frames = empty((Nframe,ny,nx),dtype=datatype)
     ticks  = empty(Nframe,dtype=uint64)
-    with open(str(fn),'rb') as f: #FIxME: for Python 2.7 Numpy 1.10 bug with io.BufferedReader IOError
+    with open(str(fn),'rb') as f: #FIXME: for Python 2.7 Numpy 1.10 bug with io.BufferedReader IOError
         for i in range(Nframe):
             frame = fromfile(f,dtype=uint16,count=npixframe).reshape((ny,nx+zerorows))
             frames[i,...] = frame[:,:-zerorows]
