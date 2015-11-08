@@ -8,7 +8,7 @@ from flask_limiter import Limiter
 
 #%%
 app = Flask(__name__)
-limiter = Limiter(app,global_limits=["2/minute","1/second"])
+limiter = Limiter(app,global_limits=["10/minute","1/second"])
 
 @app.route('/')
 def static_file():
