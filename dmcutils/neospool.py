@@ -13,7 +13,10 @@ try:
 except:
     pass  #fall back to scipy imsave, no time annotation
 #
-from histutils.timedmc import frame2ut1
+try:
+    from histutils.timedmc import frame2ut1
+except ImportError:
+    pass #time functions won't work, that's OK for basic usage of images only.
 
 
 datatype=uint16
