@@ -1,5 +1,6 @@
 #!/bin/bash
 # simple web server with polling of latest image for Andor Neo Spool Files
+# uses OpenCV 3.0 with Python 3.4/3.5
 # Michael Hirsch
 #
 # Prereqs: flask flask-limiter pathlib2
@@ -13,8 +14,8 @@ ret=$?
 [[ $ret -ne 0 ]] && { echo "server already running?"; }
 ##### we use Windows Anaconda on Windows, arbitrary choice.
 case "$(uname -s)" in
-    CYGWIN*) root=$(cygpath --windows $root); pyloop=/cygdrive/c/Anaconda/python; ;;
-    *) pyloop=python2 ;;
+    CYGWIN*) root=$(cygpath --windows $root); pyloop=/cygdrive/c/Anaconda3/python; ;;
+    *) pyloop=python3 ;;
 esac
 #### every N seconds (600=10 minutes) update the preview.
 # Note because of non-sequential file naming, this takes a few minutes each time, 
