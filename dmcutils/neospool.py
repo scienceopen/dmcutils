@@ -89,8 +89,10 @@ def mean16to8(I):
 
 def annowrite(I,newfn,pngfn):
     pngfn = Path(pngfn).expanduser()
-    try: makedirs(str(pngfn.parent))
-    except IOError: pass
+    try:  #boy is it time to ditch Python 2.x
+        makedirs(str(pngfn.parent))
+    except (WindowsError,IOError):  #windows doesn't throw IOError here...
+        pass
 
     try:
         cv2.putText(I, text=datetime.fromtimestamp(newfn.stat().st_mtime,tz=UTC).strftime('%x %X'), org=(3,35),
