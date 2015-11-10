@@ -3,7 +3,7 @@
 Michael Hirsch
 Sept 2015
 """
-from __future__ import division,absolute_import
+from pathlib2 import Path
 #
 from histutils.rawDMCreader import dmcconvert
 from dmcutils.neospool import oldspool,h5toh5
@@ -29,12 +29,14 @@ if __name__ == "__main__":
     params = {'kineticsec':p.kineticsec,'rotccw':p.rotccw,'transpose':p.transpose,
               'flipud':p.flipud,'fliplr':p.fliplr,'fire':p.fire}
 
-    if isfile(p.path) and p.path.endswith('.h5'):
+    path = Path(p.path)
+
+    if path.is_file() and path.suffix == '.h5':
         print('writing metadata')
-        rawind,ut1_unix = h5toh5(p.path,p.kineticsec,p.startutc)
-    elif isdir(p.path):
-        rawind,ut1_unix = oldspool(p.path,p.pix,p.bin,p.kineticsec,p.startutc,p.output)
+        rawind,ut1_unix = h5toh5(path,p.kineticsec,p.startutc)
+    elif path.is_dir():
+        rawind,ut1_unix = oldspool(path,p.pix,p.bin,p.kineticsec,p.startutc,p.output)
     else:
-        raise ValueError
+        raise FileNotFoundError(path)
 
     dmcconvert(None,ut1_unix,rawind,p.output,params)
