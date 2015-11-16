@@ -1,4 +1,4 @@
-function [mont,allTick] = NeoMontage(spoolDir,nx,ny,varargin)
+function [mont,allTick] = NeoMontage(spoolDir,varargin)
 % Makes montages of large number of 2015 Andor Solis Neo spool files for
 % previewing auroral data, using Octave/Matlab built-in montage() function.
 %
@@ -14,10 +14,10 @@ function [mont,allTick] = NeoMontage(spoolDir,nx,ny,varargin)
 % ------- 
 % spoolDir: where the 100,000 Neo spool files .dat are located
 % outDir: where to place output, [] uses SpoolDir
-% ny: number of y-pixels in Neo image--default 640
-% nx: number of x-pixels in Neo image--default 540
-% nFramePerSpoolFile: how many frames are in each spool file
-% nSkipFile: take every Nth file, IN ORDER OF FILE NAME--WHICH IS NOT NECESSARILY TIME ORDER!!
+% ny: number of y-pixels in Neo image  FIXME in acquisitionmetadata.ini
+% nx: number of x-pixels in Neo image  FIXME in acquisitionmetadata.ini
+% nFrameSpool: how many frames are in each spool file  FIXME in acquisitionmetadata.ini
+% skip: take every Nth file, IN ORDER OF FILE NAME--WHICH IS NOT NECESSARILY TIME ORDER!!
 % thumbnailWidth: width of thumbnails in pixels (default 128)
 %
 % designed/tested for Octave 3.6 with Cygwin under Windows 7
@@ -31,12 +31,14 @@ try %for Octave
 end
 %% user parameters
 p = inputParser;
+addOptional(p,'nx',400)
+addOptional(p,'ny',400)
 addParamValue(p,'outdir',spoolDir)
 addParamValue(p,'nFrameSpool',12) %#ok<*NVREPL> % for 2012-2013 Solis, was 11 ...
 addParamValue(p,'AOIstride',8) %always 8?
 addParamValue(p,'colfirst',true) %false for 2012-2013 Solis?, true for 2015 Solis
 addParamValue(p,'thumbnailwidth',128) %for montage, each image
-addParamValue(p,'skip',10) %every Nth file
+addParamValue(p,'skip',10) %spool.dat: every Nth file   fits: every Nth frame of each file
 addParamValue(p,'fits',false) %use FITS files instead of *spool.dat
 parse(p,varargin{:})
 U = p.Results;
@@ -44,6 +46,7 @@ U = p.Results;
 if U.fits
     dTemplate = [spoolDir,'/*.fits'];
     skipfile = 1;
+    disp(['I will read every .fits in ',spoolDir,' averaging every ',U.skip,'th frame in each file'])
 else %spool files
     dTemplate = [spoolDir,'/*spool.dat'];
     skipfile = U.skip;
