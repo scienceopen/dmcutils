@@ -1,11 +1,15 @@
 function [mont,allTick] = NeoMontage(spoolDir,nx,ny,varargin)
 % Makes montages of large number of 2015 Andor Solis Neo spool files for
 % previewing auroral data, using Octave/Matlab built-in montage() function.
-
+%
 % NOTE: If using Octave 4.0 with Image 2.4.1, you'll need my patch to make
 % montage() DisplayRange work:
 % https://savannah.gnu.org/bugs/index.php?46259
-
+%
+% NOTE: If using Octave on Cygwin or Linux be sure you have 
+%  epstool transfig pstoedit
+% installed or you'll get a blank montage (or any other figure you try to save to disk).
+%
 % inputs:
 % ------- 
 % spoolDir: where the 100,000 Neo spool files .dat are located
@@ -107,12 +111,12 @@ end
 MontPrefix = ['montage-neo-',dateStrg,'-step',int2str(skipfile)];
 montfn = [U.outdir,'/',MontPrefix,'.png'];
 [~,basemont] = fileparts(montfn);
-matfn = [U.outdir,'/',basemont,'.txt'];
+txtfn = [U.outdir,'/',basemont,'.txt'];
 
 %% save ticks
-disp(['saving parameter file: ',matfn])
+disp(['saving parameter file: ',txtfn])
 
-fid = fopen(matfn,'w');
+fid = fopen(txtfn,'w');
 fprintf(fid,'%s\n','tick filename');
 for i = 1:length(flist)
     fprintf(fid,'%d %s\n',allTick(i),flist{i});
@@ -126,8 +130,13 @@ fg = figure('visible','off'); %for remote ops
 %ax=axes('parent',fg); %doesn't work with Octave 4.0 for visible or invisible
 h=montage(data,'DisplayRange',clim); %no parent for Octave 4.0
 mont = get(h,'CData'); %NOTE: Octave 4.0 needs HG1 call
+
 disp(['saving montage ',montfn])
 print(fg,montfn,'-dpng')
+
+matfn = [U.outdir,'/',basemont,'.mat'];
+disp(['saving mat data of montage ',matfn])
+save(matfn,data)
 
 if ~nargout,clear,end
 end %function
