@@ -32,7 +32,7 @@ addParamValue(p,'nFrameSpool',12) %#ok<*NVREPL> % for 2012-2013 Solis, was 11 ..
 addParamValue(p,'AOIstride',8) %always 8?
 addParamValue(p,'colfirst',true) %false for 2012-2013 Solis?, true for 2015 Solis
 addParamValue(p,'thumbnailwidth',128) %for montage, each image
-addParamValue(p,'skip',10) %every Nth file (or frame if fits)
+addParamValue(p,'skip',10) %every Nth file
 addParamValue(p,'fits',false) %use FITS files instead of *spool.dat
 parse(p,varargin{:})
 U = p.Results;
