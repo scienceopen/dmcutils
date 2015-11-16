@@ -136,7 +136,7 @@ print(fg,montfn,'-dpng')
 
 matfn = [U.outdir,'/',basemont,'.mat'];
 disp(['saving mat data of montage ',matfn])
-save(matfn,data)
+save(matfn,'data')
 
 if ~nargout,clear,end
 end %function
