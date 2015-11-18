@@ -19,7 +19,7 @@ addRequired(p,'kineticsec')
 addOptional(p,'nx',2544)
 addOptional(p,'ny',2160)
 addOptional(p,'lla',[65.1186367, -147.432975, 500.])
-addParamValue(p,'bits',16)
+addParamValue(p,'bits',16) %#ok<*NVREPL>
 parse(p,varargin{:})
 U = p.Results;
 
