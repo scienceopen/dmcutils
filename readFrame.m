@@ -14,7 +14,7 @@ function frame = readFrame(fn,frameInd)
 switch lower(ext)
 	case {'.tif','.tiff'}
       frame = imread(fn,'Index',frameInd);
-  case '.dmcdata'
+    case '.dmcdata'
       frame = rawDMCreader(fn,'framereq',frameInd);
 	case '.fits'
       if length(frameInd)==3

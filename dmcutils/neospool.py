@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import division, absolute_import
 from pathlib2 import Path
 import logging
 from pandas import read_csv
@@ -6,7 +7,6 @@ from datetime import datetime
 from pytz import UTC
 from numpy import uint16,uint64,fromfile,empty,percentile,arange,string_,uint8
 from scipy.misc import bytescale,imsave
-from os import makedirs
 import h5py
 try:
     import cv2
@@ -71,7 +71,7 @@ def readNeoSpool(fn,inifn,zerorows=8):
 
     frames = empty((Nframe,ny,nx),dtype=datatype)
     ticks  = empty(Nframe,dtype=uint64)
-    with fn.open('rb') as f: 
+    with fn.open('rb') as f:
         for i in range(Nframe):
             frame = fromfile(f,dtype=uint16,count=npixframe).reshape((ny,nx+zerorows))
             frames[i,...] = frame[:,:-zerorows]
@@ -89,11 +89,11 @@ def mean16to8(I):
 
 def annowrite(I,newfn,pngfn):
     pngfn = Path(pngfn).expanduser()
-    makedirs(str(pngfn.parent),exist_ok=True)
+    pngfn.parent.mkdir(parents=True,exist_ok=True)
 
     try:
         cv2.putText(I, text=datetime.fromtimestamp(newfn.stat().st_mtime,tz=UTC).strftime('%x %X'), org=(3,35),
-            fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.2,
+            fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.1,
             color=(255,255,255), thickness=2)
 #%% write to disk
         cv2.imwrite(str(pngfn),I) #if using color, remember opencv requires BGR color order
