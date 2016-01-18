@@ -35,7 +35,10 @@ def whichfile(firstfn,treq):
 #%% start file
     startfn = getandorfn(dt,secondsperfile,firstfn)
 #%% last file
-    lastfn = getandorfn(treq[-1]-tstartseries,secondsperfile,firstfn)
+    if treq.size>1:
+        lastfn = getandorfn(treq[-1]-tstartseries,secondsperfile,firstfn)
+    else:
+        lastfn = None
 
     return startfn, lastfn
 
@@ -58,4 +61,6 @@ if __name__ == '__main__':
     treq = [parse(t) for t in p.treq]
 
     startfn,lastfn = whichfile(p.firstfn,treq)
-    print(startfn,lastfn)
+    print(startfn.name)
+    if lastfn:
+        print(lastfn.name)
