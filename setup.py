@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from setuptools import setup
+import subprocess
 
 with open('README.rst','r') as f:
 	long_description = f.read()
@@ -13,8 +14,14 @@ setup(name='dmcutils',
 	  url='https://github.com/scienceopen/dmcutils',
       dependency_links = ['https://github.com/scienceopen/histutils/tarball/master#egg=histutils',
                           'https://github.com/scienceopen/astrometry_azel/tarball/master#egg=astrometry_azel'],
-	  install_requires=['histutils','astrometry_azel','pathlib2'],
-      extras_require={'flask':'flask','fl',:'flask-limiter'},
+	  install_requires=['histutils','astrometry_azel'],
+      extras_require={'flask':'flask','fl':'flask-limiter'},
       packages=['dmcutils'],
 	  )
+
+#%%
+try:
+    subprocess.call(['conda','install','--yes','--quiet','--file','requirements.txt'],shell=False) #don't use os.environ
+except Exception as e:
+    print('you will need to install packages in requirements.txt  {}'.format(e))
 
