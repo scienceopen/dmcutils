@@ -3,13 +3,12 @@
 Michael Hirsch
 Sept 2015
 """
-from pathlib2 import Path
+from pathlib import Path
 #
 from histutils.rawDMCreader import dmcconvert
 from dmcutils.neospool import oldspool,h5toh5
 
 if __name__ == "__main__":
-    from os.path import isfile,isdir
     from argparse import ArgumentParser
     p = ArgumentParser(description='Andor Neo Spool reader, plotter, converter')
     p.add_argument('path',help='path containing 12-bit Neo spool files in broken format (2008-spring 2011)')
