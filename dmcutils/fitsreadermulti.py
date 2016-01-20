@@ -27,7 +27,7 @@ def fitsreadermulti(flist):
                 assert(X==h[0].header['NAXIS1'])
                 assert(Y==h[0].header['NAXIS2'])
         except Exception as e:
-            logging.warning('{}    Skipped {}'.format(e,f))
+            logging.error('{}    Skipped {}'.format(e,f))
 
     if nframetotal*X*Y*2 > 8e9:
         logging.warning('consuming more than 8GB RAM')
@@ -54,7 +54,4 @@ def fitsreadermulti(flist):
         except Exception as e:
             logging.warning('{}    Skipped {}'.format(e,f))
 
-#%%
-
-
-    return data,ut1_unix,finf['frameind']
+    return data,ut1_unix,finf['frameind'],finf['kineticsec']
