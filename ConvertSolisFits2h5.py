@@ -5,19 +5,23 @@ watch RAM consumption
 """
 
 from tempfile import mkstemp
+from numpy import nan
 #
 from dmcutils.fitsreadermulti import fitsreadermulti
 from histutils.rawDMCreader import dmcconvert
 
-def main(flist,output,params):
+def main(flist,output,params,cmdlog):
 
-    data,ut1_unix,rawind = fitsreadermulti(flist)
+    data,ut1_unix,rawind,kineticsec = fitsreadermulti(flist)
 
-    dmcconvert(data,ut1_unix,rawind,output,params)
+    params['kineticsec'] = kineticsec
+
+    dmcconvert(data,ut1_unix,rawind,output,params,cmdlog)
 
 
 
 if __name__ == '__main__':
+    from sys import argv
     from argparse import ArgumentParser
     p = ArgumentParser(description='converts multiple Andor Solis FITS files into one HDF5 with timestamps')
     p.add_argument('flist',help='file(s) to convert to one HDF5 file',nargs='+')
@@ -26,11 +30,12 @@ if __name__ == '__main__':
     p.add_argument('--transpose',help='transpose image',action='store_true')
     p.add_argument('--flipud',help='vertical flip',action='store_true')
     p.add_argument('--fliplr',help='horizontal flip',action='store_true')
+    p.add_argument('-c','--coordinates',help='wgs84 coordinates of sensor (lat,lon,alt_m)',nargs=3,default=(nan,nan,nan),type=float)
     p = p.parse_args()
 
     params = {'rotccw':p.rotccw,'transpose':p.transpose,
-              'flipud':p.flipud,'fliplr':p.fliplr}
+              'flipud':p.flipud,'fliplr':p.fliplr,'sensorloc':p.coordinates}
 
-    main(p.flist,p.output,params)
+    main(p.flist,p.output,params,' '.join(argv))
 
 
