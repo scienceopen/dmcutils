@@ -6,7 +6,7 @@ can accept input files in .h5 .fits and more
 
 Michael Hirsch
 """
-from pathlib2 import Path
+from pathlib import Path
 from tempfile import mkstemp
 #
 # REQUIRES https://github.com/scienceopen/astrometry_azel
@@ -14,11 +14,9 @@ from astrometry_azel.imgAvgfits import meanstack,writefits
 from astrometry_azel.fits2azel import fits2azel
 
 def doplatescale(infn,outfn,latlon,ut1):
-    if infn is None:
-        return
-    fitsfn = outfn.with_suffix('.fits')
+    fitsfn = Path(outfn).expanduser().with_suffix('.fits')
 #%% convert to mean
-    meanimg,ut1 = meanstack(infn,1,ut1)
+    meanimg,ut1 = meanstack(infn,10,ut1)
     writefits(meanimg,fitsfn)
 #%%
     x,y,ra,dec,az,el,timeFrame = fits2azel(fitsfn,latlon,ut1,['show','h5','png'],(0,2800))
@@ -33,4 +31,4 @@ if __name__ == '__main__':
     p = p.parse_args()
 
 
-    doplatescale(Path(p.infn),Path(p.outfn),p.latlon,p.ut1)
+    doplatescale(p.infn,p.outfn,p.latlon,p.ut1)
