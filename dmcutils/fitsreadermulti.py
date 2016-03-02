@@ -8,9 +8,11 @@ from astropy.io import fits
 from numpy import zeros,uint16,empty,nan
 #
 from histutils.rawDMCreader import getNeoParam
+from .h5imgwriter import setupimgh5,imgwriteincr
 
-def fitsreadermulti(flist):
+def fitsreadermulti(flist,outfn):
 
+    outfn = Path(outfn).expanduser()
     flist = [Path(f).expanduser() for f in flist]
 
     with fits.open(str(flist[0]),'readonly') as h:
@@ -32,7 +34,8 @@ def fitsreadermulti(flist):
     if nframetotal*X*Y*2 > 8e9:
         logging.warning('consuming more than 8GB RAM')
 #%%
-    data = zeros((nframetotal,Y,X),dtype=uint16)
+    setupimgh5(outfn,nframetotal,Y,X)
+
     ut1_unix = empty(nframetotal);  ut1_unix.fill(nan)
 
 
@@ -45,13 +48,11 @@ def fitsreadermulti(flist):
                 finf = getNeoParam(f)[0]
                 ut1_unix[lastframe:lastframe+N] = finf['ut1']
 
-                data[lastframe:lastframe+N,...] = h[0].data
+                imgwriteincr(outfn,h[0].data,slice(lastframe,lastframe+N))
 
                 lastframe += N
 
-
-
         except Exception as e:
-            logging.warning('{}    Skipped {}'.format(e,f))
+            logging.warning('{}   Skipped {}'.format(e,f))
 
-    return data,ut1_unix,finf['frameind'],finf['kineticsec']
+    return ut1_unix,finf['frameind'],finf['kineticsec']

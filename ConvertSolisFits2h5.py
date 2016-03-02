@@ -12,11 +12,11 @@ from histutils.rawDMCreader import dmcconvert
 
 def main(flist,output,params,cmdlog):
 
-    data,ut1_unix,rawind,kineticsec = fitsreadermulti(flist)
+    ut1_unix,rawind,kineticsec = fitsreadermulti(flist,output)
 
     params['kineticsec'] = kineticsec
 
-    dmcconvert(data,ut1_unix,rawind,output,params,cmdlog)
+    dmcconvert(None,ut1_unix,rawind,output,params,cmdlog)
 
 
 
