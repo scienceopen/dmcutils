@@ -5,7 +5,7 @@ reads multiple fits files and concatenates (consider your available RAM!)
 import logging
 from pathlib import Path
 from astropy.io import fits
-from numpy import zeros,uint16,empty,nan
+from numpy import empty,nan
 #
 from histutils.rawDMCreader import getNeoParam
 from .h5imgwriter import setupimgh5,imgwriteincr
