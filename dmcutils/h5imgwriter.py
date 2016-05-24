@@ -23,7 +23,9 @@ def setupimgh5(fn,Nframetotal,Nrow,Ncol,dtype=int16):
         fimg.attrs['IMAGE_WHITE_IS_ZERO'] = uint8(0)
 
 def imgwriteincr(fn,imgs,imgslice):
-    print('appending images {} to {}'.format(imgslice,fn))
+    if isinstance(imgslice,int):
+        if imgslice and not (imgslice % 50):
+            print('appending images {} to {}'.format(imgslice,fn))
 
     with h5py.File(str(fn),'r+',libver='latest') as f:
         f['/rawimg'][imgslice,:,:] = imgs
