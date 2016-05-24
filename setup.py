@@ -3,6 +3,12 @@
 from setuptools import setup
 import subprocess
 
+#%%
+try:
+    subprocess.run(['conda','install','--yes','--file','requirements.txt'])
+except Exception as e:
+    pass
+
 with open('README.rst','r') as f:
 	long_description = f.read()
 
@@ -19,8 +25,3 @@ setup(name='dmcutils',
       packages=['dmcutils'],
 	  )
 
-#%%
-try:
-    subprocess.run(['conda','install','--yes','--quiet','--file','requirements.txt'])
-except Exception as e:
-    pass
