@@ -4,7 +4,7 @@ import subprocess
 
 #%%
 try:
-    subprocess.run(['conda','install','--yes','--file','requirements.txt'])
+    subprocess.call(['conda','install','--yes','--file','requirements.txt'])
 except Exception as e:
     pass
 
@@ -12,7 +12,6 @@ with open('README.rst','r') as f:
 	long_description = f.read()
 
 setup(name='dmcutils',
-      version='0.1',
 	  description='Utilities for working with DMC (dual multi camera) Andor Neo sCMOS data',
 	  long_description=long_description,
 	  author='Michael Hirsch',
@@ -21,6 +20,5 @@ setup(name='dmcutils',
                           'https://github.com/scienceopen/astrometry_azel/tarball/master#egg=astrometry_azel'],
 	  install_requires=['histutils','astrometry_azel'],
       extras_require={'flask':'flask','fl':'flask-limiter'},
-      packages=['dmcutils'],
 	  )
 
