@@ -12,6 +12,7 @@ with open('README.rst','r') as f:
 	long_description = f.read()
 
 setup(name='dmcutils',
+      packages=['dmcutils'],
 	  description='Utilities for working with DMC (dual multi camera) Andor Neo sCMOS data',
 	  long_description=long_description,
 	  author='Michael Hirsch',
