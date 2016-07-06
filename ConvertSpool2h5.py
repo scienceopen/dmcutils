@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Michael Hirsch
 Sept 2015
 """
-from pathlib import Path
+from dmcutils import Path
 #
 from histutils.rawDMCreader import dmcconvert
 from dmcutils.neospool import oldspool,h5toh5
