@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 converts multiple Andor Solis FITS files into one HDF5 with timestamps
 watch RAM consumption
