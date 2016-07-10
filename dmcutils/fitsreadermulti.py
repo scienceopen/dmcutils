@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 reads multiple fits files and concatenates (consider your available RAM!)
 """
 import logging
-from pathlib import Path
+from . import Path
 from astropy.io import fits
 from numpy import empty,nan
 #
