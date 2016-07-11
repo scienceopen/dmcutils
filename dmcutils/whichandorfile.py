@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Assuming a series of Andor Solis saved files, which one has the desired time range given:
 start time, kinetic time
 """
 import logging
-from pathlib import Path
+from . import Path
 from datetime import datetime,timedelta
 from numpy import atleast_1d
 from dateutil.parser import parse
