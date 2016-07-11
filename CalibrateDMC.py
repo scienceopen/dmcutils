@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """ script to calibrate sCMOS and CCD data for 2013-01-13
 the CCD data was the first frame of irs_archive1/DMC/DataField/2012-11-22ccd.7z/spool.fits on our internal server.
 
@@ -6,7 +6,7 @@ can accept input files in .h5 .fits and more
 
 Michael Hirsch
 """
-from pathlib import Path
+from dmcutils import Path
 from tempfile import mkstemp
 #
 # REQUIRES https://github.com/scienceopen/astrometry_azel
