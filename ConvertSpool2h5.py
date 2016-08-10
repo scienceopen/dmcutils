@@ -28,7 +28,7 @@ if __name__ == "__main__":
     params = {'kineticsec':p.kineticsec,'rotccw':p.rotccw,'transpose':p.transpose,
               'flipud':p.flipud,'fliplr':p.fliplr,'fire':p.fire}
 
-    path = Path(p.path)
+    path = Path(p.path).expanduser()
 
     if path.is_file() and path.suffix == '.h5':
         print('writing metadata')
