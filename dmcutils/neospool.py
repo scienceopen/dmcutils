@@ -11,7 +11,12 @@ import h5py
 try:
     import cv2
 except:
-    pass  #fall back to scipy imsave, no time annotation
+    cv2=None  #fall back to scipy imsave, no time annotation
+
+try:
+    import matlab.engine
+except ImportError:
+    matlab = None
 #
 from histutils.timedmc import frame2ut1
 
@@ -88,55 +93,71 @@ def annowrite(I,newfn,pngfn):
     pngfn = Path(pngfn).expanduser()
     pngfn.parent.mkdir(parents=True,exist_ok=True)
 
-    try:
+    if cv2:
         cv2.putText(I, text=datetime.fromtimestamp(newfn.stat().st_mtime,tz=UTC).strftime('%x %X'), org=(3,35),
             fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.1,
             color=(255,255,255), thickness=2)
 #%% write to disk
         cv2.imwrite(str(pngfn),I) #if using color, remember opencv requires BGR color order
-    except NameError:
+    else:
         imsave(str(pngfn),I)
 
 def oldspool(path,xy,bn,kineticsec,startutc,outfn):
     """
     for old 2011 solis with defects 12 bit, big endian, little endian alternating
     """
-    print('starting Matlab')
-    import matlab.engine
-    eng = matlab.engine.start_matlab("-nojvm")
+    if not outfn:
+        raise ValueError('you must specify an output file to write')
 
     path =  Path(path).expanduser()
     outfn = Path(outfn).expanduser()
-    flist = sorted(path.glob('*.dat'))
+
+    if path.is_file():
+        flist = [path]
+    elif path.is_dir():
+        flist = sorted(path.glob('*.dat'))
+    else:
+        raise FileNotFoundError('no files found  {}'.format(path))
+
     nfile = len(flist)
+    if nfile<1:
+        raise FileNotFoundError('no files found  {}'.format(path))
+
     print('Found {} .dat files in {}'.format(nfile,path))
+#%%
+    if matlab:
+        print('starting Matlab')
+        eng = matlab.engine.start_matlab("-nojvm")
+    else:
+        raise ImportError('matlab engine not yet setup. see\n https://scivision.co/matlab-engine-callable-from-python-how-to-install-and-setup/' )
 
-    nx,ny= xy[0]//bn[0], xy[1]//bn[1]
+    try:
+        nx,ny= xy[0]//bn[0], xy[1]//bn[1]
 
-    with h5py.File(str(outfn),'w',libver='latest') as fh5:
-        fimg = fh5.create_dataset('/rawimg',(nfile,ny,nx),
-                                  dtype=uint16,
-                                  compression='gzip',
-                                  compression_opts=4,
-                                  track_times=True)
-        fimg.attrs["CLASS"] = string_("IMAGE")
-        fimg.attrs["IMAGE_VERSION"] = string_("1.2")
-        fimg.attrs["IMAGE_SUBCLASS"] = string_("IMAGE_GRAYSCALE")
-        fimg.attrs["DISPLAY_ORIGIN"] = string_("LL")
-        fimg.attrs['IMAGE_WHITE_IS_ZERO'] = uint8(0)
+        with h5py.File(str(outfn),'w',libver='latest') as fh5:
+            fimg = fh5.create_dataset('/rawimg',(nfile,ny,nx),
+                                      dtype=uint16,
+                                      compression='gzip',
+                                      compression_opts=4,
+                                      track_times=True)
+            fimg.attrs["CLASS"] = string_("IMAGE")
+            fimg.attrs["IMAGE_VERSION"] = string_("1.2")
+            fimg.attrs["IMAGE_SUBCLASS"] = string_("IMAGE_GRAYSCALE")
+            fimg.attrs["DISPLAY_ORIGIN"] = string_("LL")
+            fimg.attrs['IMAGE_WHITE_IS_ZERO'] = uint8(0)
 
-        for i,f in enumerate(flist):
-            print('processing {}   {} / {}'.format(f,i+1,nfile))
-            try:
-                datmat = eng.readNeoPacked12bit(f, nx,ny)
-                assert datmat.size == (ny,nx)
-                fimg[i,...] = datmat
-            except AssertionError as e:
-                logging.critical('matlab returned improper size array {}'.format(e))
-            except Exception as e:
-                logging.critical('matlab had a problem on frame {}   {}'.format(i,e))
-
-    eng.quit()
+            for i,f in enumerate(flist):
+                print('processing {}   {} / {}'.format(f,i+1,nfile))
+                try:
+                    datmat = eng.readNeoPacked12bit(str(f), nx,ny)
+                    assert datmat.size == (ny,nx)
+                    fimg[i,...] = datmat
+                except AssertionError as e:
+                    logging.critical('matlab returned improper size array {}'.format(e))
+                except Exception as e:
+                    logging.critical('matlab had a problem on frame {}   {}'.format(i,e))
+    finally:
+        eng.quit()
 
     rawind = arange(nfile)+1
     ut1 = frame2ut1(startutc,kineticsec,rawind)
