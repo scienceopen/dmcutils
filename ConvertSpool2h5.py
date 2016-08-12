@@ -5,7 +5,7 @@ Sept 2015
 """
 from dmcutils import Path
 #
-from histutils.rawDMCreader import dmcconvert
+from histutils.vid2h5 import vid2h5
 from dmcutils.neospool import oldspool,h5toh5
 
 if __name__ == "__main__":
@@ -38,4 +38,4 @@ if __name__ == "__main__":
     else:
         raise FileNotFoundError(path)
 
-    dmcconvert(None,ut1_unix,rawind,p.output,params)
+    vid2h5(None,ut1_unix,rawind,p.output,params)

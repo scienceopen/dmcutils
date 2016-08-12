@@ -18,6 +18,7 @@ def fitsreadermulti(flist,outfn):
     with fits.open(str(flist[0]),'readonly') as f:
         assert len(f[0].shape) == 3,'i expect multiple images per file. Trivial change to one image per file' # no .ndim in astropy.io.fits 1.2
         Y,X = f[0].shape[-2:]
+        header = dict(f[0].header)
 #%% find total number of frames in all specified files
     nframetotal = 0
     for f in flist:
@@ -55,4 +56,4 @@ def fitsreadermulti(flist,outfn):
         except Exception as e:
             logging.warning('{}   Skipped {}'.format(e,f))
 
-    return ut1_unix,finf['frameind'],finf['kineticsec']
+    return ut1_unix,finf['frameind'],finf['kineticsec'],header
