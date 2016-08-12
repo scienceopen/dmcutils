@@ -27,5 +27,9 @@ def imgwriteincr(fn,imgs,imgslice):
         if imgslice and not (imgslice % 50):
             print('appending images {} to {}'.format(imgslice,fn))
 
+            print('writing {}'.format(fn))
+
+    assert fn.suffix == '.h5','Expecting to write .h5 file' # avoid accidental overwriting of source file due to misspecified command line
+
     with h5py.File(str(fn),'r+',libver='latest') as f:
         f['/rawimg'][imgslice,:,:] = imgs
