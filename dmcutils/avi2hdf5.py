@@ -7,7 +7,7 @@ from . import Path
 from numpy import arange,zeros
 #
 from cvutils.getaviprop import getaviprop
-from histutils.rawDMCreader import dmcconvert
+from histutils.vid2h5 import vid2h5
 from histutils.timedmc import frame2ut1
 
 def avi2hdf5(avifn,ofn,t0, P, cmdlog):
@@ -39,4 +39,4 @@ def avi2hdf5(avifn,ofn,t0, P, cmdlog):
 
     vid.release()
 
-    dmcconvert(img8,ut1, rawind, ofn, P, cmdlog)
+    vid2h5(img8,ut1, rawind, ofn, P, cmdlog)
