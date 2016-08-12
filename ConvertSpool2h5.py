@@ -33,9 +33,7 @@ if __name__ == "__main__":
     if path.is_file() and path.suffix == '.h5':
         print('writing metadata')
         rawind,ut1_unix = h5toh5(path,p.kineticsec,p.startutc)
-    elif path.is_dir():
-        rawind,ut1_unix = oldspool(path,p.pix,p.bin,p.kineticsec,p.startutc,p.output)
     else:
-        raise FileNotFoundError(path)
+        rawind,ut1_unix = oldspool(path,p.pix,p.bin,p.kineticsec,p.startutc,p.output)
 
     vid2h5(None,ut1_unix,rawind,p.output,params)
