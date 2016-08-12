@@ -14,20 +14,19 @@ def fitsreadermulti(flist,outfn):
 
     outfn = Path(outfn).expanduser()
     flist = [Path(f).expanduser() for f in flist]
-
-    with fits.open(str(flist[0]),'readonly') as h:
-        X,Y = h[0].header['NAXIS1'], h[0].header['NAXIS2']
-
+#%% get size of each image
+    with fits.open(str(flist[0]),'readonly') as f:
+        assert len(f[0].shape) == 3,'i expect multiple images per file. Trivial change to one image per file' # no .ndim in astropy.io.fits 1.2
+        Y,X = f[0].shape[-2:]
+#%% find total number of frames in all specified files
     nframetotal = 0
-
-
     for f in flist:
         try:
             with fits.open(str(f),'readonly') as h:
-                nframetotal += h[0].header['NAXIS3']
+                nframetotal += h[0].shape[0]
                 #be sure all files the same image size
-                assert(X==h[0].header['NAXIS1'])
-                assert(Y==h[0].header['NAXIS2'])
+                assert(X==h[0].shape[2])
+                assert(Y==h[0].shape[1])
         except Exception as e:
             logging.error('{}    Skipped {}'.format(e,f))
 
@@ -41,9 +40,10 @@ def fitsreadermulti(flist,outfn):
 
     lastframe = 0
     for f in flist:
+        print('reading {}'.format(f))
         try:
             with fits.open(str(f),'readonly') as h:
-                N = h[0].header['NAXIS3']
+                N = h[0].shape[0]
 
                 finf = getNeoParam(f)[0]
                 ut1_unix[lastframe:lastframe+N] = finf['ut1']
