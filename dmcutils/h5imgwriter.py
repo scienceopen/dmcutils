@@ -2,10 +2,12 @@
 writes HDF5 huge image files in increments
 
 """
+from . import Path
 import h5py
 from numpy import string_,uint8,int16
 
 def setupimgh5(fn,Nframetotal,Nrow,Ncol,dtype=int16):
+    print('creating {}'.format(fn))
     with h5py.File(str(fn),'w',libver='latest') as f:
         fimg = f.create_dataset('/rawimg',
                  shape =  (Nframetotal,Nrow,Ncol),
@@ -23,11 +25,11 @@ def setupimgh5(fn,Nframetotal,Nrow,Ncol,dtype=int16):
         fimg.attrs['IMAGE_WHITE_IS_ZERO'] = uint8(0)
 
 def imgwriteincr(fn,imgs,imgslice):
-    if isinstance(imgslice,int):
-        if imgslice and not (imgslice % 50):
-            print('appending images {} to {}'.format(imgslice,fn))
+    assert isinstance(fn,Path)
 
-            print('writing {}'.format(fn))
+    if isinstance(imgslice,int):
+        if imgslice and not (imgslice % 2000):
+            print('appending images {} to {}'.format(imgslice,fn))
 
     assert fn.suffix == '.h5','Expecting to write .h5 file' # avoid accidental overwriting of source file due to misspecified command line
 
