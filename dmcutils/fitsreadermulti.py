@@ -8,7 +8,7 @@ from astropy.io import fits
 from numpy import empty,nan
 #
 from histutils.rawDMCreader import getNeoParam
-from .h5imgwriter import setupimgh5,imgwriteincr
+from histutils.h5imgwriter import setupimgh5,imgwriteincr
 
 def fitsreadermulti(flist,outfn):
 
