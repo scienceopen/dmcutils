@@ -3,7 +3,7 @@
 Michael Hirsch
 Sept 2015
 """
-from dmcutils import Path
+from pathlib import Path
 #
 from histutils.vid2h5 import vid2h5
 from dmcutils.neospool import oldspool,h5toh5

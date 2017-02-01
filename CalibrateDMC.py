@@ -6,7 +6,7 @@ can accept input files in .h5 .fits and more
 
 Michael Hirsch
 """
-from dmcutils import Path
+from pathlib import Path
 from tempfile import mkstemp
 #
 # REQUIRES https://github.com/scienceopen/astrometry_azel

@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-from __future__ import division,absolute_import
-#
+#!/usr/bin/env python
 from dmcutils.neospool import findnewest,readNeoSpool,mean16to8,annowrite
 
 if __name__ == '__main__':

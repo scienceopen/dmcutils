@@ -1,4 +1,4 @@
 #!/usr/bin/env python
-from dmcutils import Path
+from pathlib import Path
 
 rdir = Path(__file__).parents[1]
