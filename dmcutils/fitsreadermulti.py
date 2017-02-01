@@ -3,7 +3,7 @@
 reads multiple fits files and concatenates (consider your available RAM!)
 """
 import logging
-from . import Path
+from pathlib import Path
 from astropy.io import fits
 from numpy import empty,nan
 #

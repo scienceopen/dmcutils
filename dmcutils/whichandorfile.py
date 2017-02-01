@@ -4,7 +4,7 @@ Assuming a series of Andor Solis saved files, which one has the desired time ran
 start time, kinetic time
 """
 import logging
-from . import Path
+from pathlib import Path
 from datetime import datetime,timedelta
 from numpy import atleast_1d
 from dateutil.parser import parse

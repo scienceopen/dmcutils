@@ -3,7 +3,7 @@
 convert AVI to HDF5
 """
 import cv2
-from . import Path
+from pathlib import Path
 from numpy import arange,zeros
 #
 from cvutils.getaviprop import getaviprop

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import division, absolute_import
-from . import Path
+from pathlib import Path
 import logging
 from pandas import read_csv
 from datetime import datetime
