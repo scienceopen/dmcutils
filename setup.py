@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 from setuptools import setup
 
-try:
-    import conda.cli
-    conda.cli.main('install','--file','requirements.txt')
-except Exception as e:
-    print(e)
+req=['histutils','astrometry_azel','cvutils',
+     'nose','python-dateutil','pytz','pandas','h5py','scikit-image','matplotlib']
 
 setup(name='dmcutils',
       packages=['dmcutils'],
-      dependency_links = ['https://github.com/scienceopen/histutils/tarball/master#egg=histutils',
-                          'https://github.com/scienceopen/astrometry_azel/tarball/master#egg=astrometry_azel',
-                          'https://github.com/scienceopen/cvutils/tarball/master#egg=cvutils'],
-	  install_requires=['histutils','astrometry_azel','cvutils',],
+      author='Michael Hirsch, Ph.D.',
+      url='https://github.com/scienceopen/dmcutils',
+      description='Utilities to read and plot DMC Experiment data',
+      version='0.9',
+      dependency_links = ['https://github.com/scienceopen/cvutils/tarball/master#egg=cvutils'],
+	  install_requires=req,
       extras_require={'flask':'flask','fl':'flask-limiter'},
 	  )
 
