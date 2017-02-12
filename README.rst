@@ -3,20 +3,14 @@ dmcutils
 =========
 
 Programs used to help with the Dual-Multi-sCale (DMC) experiment.
-Example of dealing with 100000 - 1 million Andor Neo spool files in a fast way (using GNU Octave or Matlab)
+Example of dealing with 100000 - 1 million Andor Neo spool files in a fast way.
 
 .. contents::
-
-Requirements
-=============
-`GNU Octave 4.0+ <http://www.gnu.org/software/octave/>`_ or Matlab R2014b+
 
 Installation
 ============
 ::
 
-    git clone http://github.com/scienceopen/dmcutils
-    conda install --file requirements.txt
     python setup.py develop
 
 Functions
@@ -37,3 +31,10 @@ Experiments:
 
 -datadir       path to data files
 -writevid      filename to write to (uncompressed AVI)
+
+Install Matlab Engine
+=====================
+
+https://www.scivision.co/matlab-engine-callable-from-python-how-to-install-and-setup/
+
+

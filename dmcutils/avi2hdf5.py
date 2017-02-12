@@ -6,7 +6,7 @@ import cv2
 from pathlib import Path
 from numpy import arange,zeros
 #
-from cvutils.getaviprop import getaviprop
+from morecvutils.getaviprop import getaviprop
 from histutils.vid2h5 import vid2h5
 from histutils.timedmc import frame2ut1
 
