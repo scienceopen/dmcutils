@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 from __future__ import division, absolute_import
 from pathlib import Path
 import logging
@@ -10,7 +10,7 @@ from scipy.misc import bytescale,imsave
 import h5py
 try:
     import cv2
-except:
+except ImportError:
     cv2=None  #fall back to scipy imsave, no time annotation
 
 try:
@@ -24,15 +24,15 @@ from histutils.timedmc import frame2ut1
 datatype=uint16
 
 def findnewest(path):
-    assert path, '{} is empty'.format(path)
+    assert path, f'{path} is empty'
     path = Path(path).expanduser()
-    assert path.exists(),'{} could not find'.format(path)
+    assert path.exists(),f'{path}: could not find'
 #%% it's a file
     if path.is_file():
         return path
 #%% it's a directory
     flist = path.glob('*.dat')
-    assert flist, 'no files found in {}'.format(path)
+    assert flist, f'no files found in {path}'
 
     # max(fl2,key=getmtime)                             # 9.2us per loop, 8.1 time cache Py3.5,  # 6.2us per loop, 18 times cache  Py27
     #max((str(f) for f in flist), key=getmtime)         # 13us per loop, 20 times cache, # 10.1us per loop, no cache Py27
@@ -69,7 +69,7 @@ def readNeoSpool(fn,inifn,zerorows=8):
     if Nframe != filebytes // framebytes:
         logging.warning('file may be read incorrectly')
     else:
-        logging.info('{} frames / file'.format(Nframe))
+        logging.info(f'{Nframe} frames / file')
 
     frames = empty((Nframe,ny,nx),dtype=datatype)
     ticks  = empty(Nframe,dtype=uint64)
@@ -117,13 +117,13 @@ def oldspool(path,xy,bn,kineticsec,startutc,outfn):
     elif path.is_dir():
         flist = sorted(path.glob('*.dat'))
     else:
-        raise FileNotFoundError('no files found  {}'.format(path))
+        raise FileNotFoundError(f'no files found  {path}')
 
     nfile = len(flist)
     if nfile<1:
-        raise FileNotFoundError('no files found  {}'.format(path))
+        raise FileNotFoundError(f'no files found  {path}')
 
-    print('Found {} .dat files in {}'.format(nfile,path))
+    print(f'Found {nfile} .dat files in {path}')
 #%%
     if matlab:
         print('starting Matlab')
@@ -147,15 +147,15 @@ def oldspool(path,xy,bn,kineticsec,startutc,outfn):
             fimg.attrs['IMAGE_WHITE_IS_ZERO'] = uint8(0)
 
             for i,f in enumerate(flist):
-                print('processing {}   {} / {}'.format(f,i+1,nfile))
+                print(f'processing {f}   {i+1} / {nfile}')
                 try:
                     datmat = eng.readNeoPacked12bit(str(f), nx,ny)
                     assert datmat.size == (ny,nx)
                     fimg[i,...] = datmat
                 except AssertionError as e:
-                    logging.critical('matlab returned improper size array {}'.format(e))
+                    logging.critical(f'matlab returned improper size array {e}')
                 except Exception as e:
-                    logging.critical('matlab had a problem on frame {}   {}'.format(i,e))
+                    logging.critical(f'matlab had a problem on frame {i}   {e}')
     finally:
         eng.quit()
 
