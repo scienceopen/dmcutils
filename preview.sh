@@ -1,10 +1,11 @@
 #!/bin/bash
 # simple web server with polling of latest image for Andor Neo Spool Files
-# uses OpenCV 3.0 with Python 3.4/3.5
+# uses OpenCV 3.2 with Python 3.6
 # Michael Hirsch
 #
-# Prereqs: flask flask-limiter pathlib2
-
+# Prereqs: pip install flask flask-limiter
+#
+# Usage:  ./preview.sh ~/datadir
 
 root=$1
 [[ -d $root ]] || { echo "$root not a directory"; exit 1; }

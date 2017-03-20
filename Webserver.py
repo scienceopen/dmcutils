@@ -24,4 +24,4 @@ if __name__ == '__main__':
     try:
         app.run(host='0.0.0.0',port=p.port)
     except socket.error as e:
-        logging.info('server may be already running  {}'.format(e))
+        logging.info(f'server may be already running  {e}')
