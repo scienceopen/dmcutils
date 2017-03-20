@@ -1,17 +1,25 @@
 #!/usr/bin/env python
-import logging
+"""
+browse to
+http://localhost/latest.jpg
+
+and put latest.jpg under dmcutils/static/
+"""
 import socket
+from sys import stderr
 #
 from flask import Flask, send_from_directory
-from flask_limiter import Limiter
+import flask_limiter
 
 #%%
-app = Flask(__name__)
-limiter = Limiter(app,global_limits=["10/minute","1/second"])
+app = Flask(__name__,static_url_path='')
+limiter = flask_limiter.Limiter(app,
+                global_limits=["10/minute","1/second"],)
+               # key_func=flask_limiter.util.get_ipaddr())
 
 @app.route('/')
 def static_file():
-    return send_from_directory('./html/',
+    return send_from_directory('static',
                                'latest.png',
                                as_attachment=False)
 
@@ -24,4 +32,4 @@ if __name__ == '__main__':
     try:
         app.run(host='0.0.0.0',port=p.port)
     except socket.error as e:
-        logging.info(f'server may be already running  {e}')
+        print(f'server may be already running  {e}',file=stderr)
