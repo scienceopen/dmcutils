@@ -22,7 +22,8 @@ esac
 # Note because of non-sequential file naming, this takes a few minutes each time, 
 # proportional to the rapidly increasing number of spool files...
 while :; do
-    $pyloop -u ../andor-scmos-examples/GrabImage.py
+    (cd ../andor-scmos-examples
+    $pyloop -u GrabImage.py)
     cp ../andor-scmos-examples/latest.jpg static/
     nice -n 19 $pyloop -u live_preview_neospool.py $root 2>>$HOME/live.log
     echo "sleep"
