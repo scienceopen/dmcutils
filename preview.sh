@@ -16,7 +16,7 @@ case "$(uname -s)" in
 esac
 
 ##### detect if server already running, if not, start it
-nice -n 15 python3 Webserver.py 8088 2>>$HOME/server.log &
+nice -n 15 $pyloop Webserver.py 8088 2>>$HOME/server.log &
 ret=$?
 [[ $ret -ne 0 ]] && { echo "server already running?"; }
 ##### we use Windows Anaconda on Windows, arbitrary choice.
