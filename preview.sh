@@ -15,7 +15,7 @@ ret=$?
 [[ $ret -ne 0 ]] && { echo "server already running?"; }
 ##### we use Windows Anaconda on Windows, arbitrary choice.
 case "$(uname -s)" in
-    CYGWIN*) root=$(cygpath --windows $root); pyloop=/cygdrive/c/Anaconda3/python; ;;
+    CYGWIN*) root=$(cygpath --windows $root); pyloop=/cygdrive/c/Miniconda3/python; ;;
     *) pyloop=python3 ;;
 esac
 #### every N seconds (600=10 minutes) update the preview.
