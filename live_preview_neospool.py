@@ -13,8 +13,8 @@ if __name__ == '__main__':
 
     root = Path(p.path).expanduser()
     
-    if root.is_file() or (root/'image.bmp').is_file():
-        f8bit = imread(root) # TODO check for 8 bit
+    if (root/'image.bmp').is_file():
+        f8bit = imread(root/'image.bmp') # TODO check for 8 bit
     elif root.is_dir():
 #%% find newest file to extract images from
         newfn = findnewest(root)
