@@ -4,6 +4,8 @@ Reports first tick number in file vs filename
 I don't think filename are monotonic w.r.t. ticks.
 """
 from pathlib import Path
+import numpy as np
+from pandas import Series
 #
 from dmcutils.neospool import readNeoSpool,spoolparam
 
@@ -26,9 +28,11 @@ if __name__ == '__main__':
 
     P = spoolparam(flist[0].parent/INIFN)
 
-    F = {}
+    ticks = np.empty(len(flist),dtype=np.uint64)
     for i,f in enumerate(flist):
-        F[str(f.stem)]  = readNeoSpool(f,P,True)
+        ticks[i]  = readNeoSpool(f,P,True)
+
+    F = Series(index=ticks,data=[f.stem for f in flist])
 
 
 #%% print results
