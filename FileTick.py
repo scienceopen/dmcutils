@@ -33,7 +33,7 @@ if __name__ == '__main__':
         ticks[i]  = readNeoSpool(f,P,True)
 
     F = Series(index=ticks,data=[f.stem for f in flist])
+    F.sort_index(inplace=True)
 
-
-#%% print results
+#%% print tick vs. filename
     print(F)
