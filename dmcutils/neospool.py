@@ -104,8 +104,6 @@ def readNeoSpool(fn:Path,P:dict,tickonly:bool=False):
     filebytes = fn.stat().st_size
     if P['nframe'] != filebytes // P['framebytes']:
         logging.critical('file may be read incorrectly -- wrong # of frames/file')
-    else:
-        logging.info(f'{P["nframe"]} frames / file')
 #%% read this spool file
     imgs = np.empty((P['nframe'],ny,nx), dtype=dtype)
     ticks  = np.zeros(P['nframe'], dtype=np.uint64)
@@ -118,6 +116,8 @@ def readNeoSpool(fn:Path,P:dict,tickonly:bool=False):
 #%% get FPGA ticks value (propto elapsed time)
             # NOTE see ../Matlab/parseNeoHeader.m for other numbers, which are probably useless. Use struct.unpack() with them
                 ticks[j] = np.fromfile(f, dtype=np.uint64, count=P['stride']//8)[-2]
+                if tickonly:
+                    return ticks[0]
 
                 j+=1
             else: # file is over, rest will be all zeros from my experience
