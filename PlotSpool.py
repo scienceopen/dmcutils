@@ -7,7 +7,7 @@ from pathlib import Path
 from matplotlib.pyplot import figure,draw,pause,show
 #import seaborn
 #
-from dmcutils.neospool import readNeoSpool
+from dmcutils.neospool import readNeoSpool,spoolparam
 
 INIFN = 'acquisitionmetadata.ini' # autogen from Solis
 PL= True
@@ -28,8 +28,10 @@ if __name__ == '__main__':
     else:
         raise FileNotFoundError('no spool files found in ',path)
 
+    P = spoolparam(flist[0].parent/INIFN)
+
     for f in flist:
-        imgs,ticks = readNeoSpool(f,INIFN)
+        imgs,ticks = readNeoSpool(f,P)
 
         if PL:
             fg = figure(1)
