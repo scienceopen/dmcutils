@@ -7,6 +7,7 @@ from pytz import UTC
 import numpy as np
 from scipy.misc import bytescale,imsave
 import h5py
+from pandas import Series
 try:
     import cv2
 except ImportError:
@@ -127,6 +128,20 @@ def readNeoSpool(fn:Path,P:dict,tickonly:bool=False):
     ticks = ticks[:j]
 
     return imgs,ticks
+
+def tickfile(flist,P):
+    """
+    sorts filenames into FPGA tick order so that you can read video in time order
+    """
+    ticks = np.empty(len(flist),dtype=np.uint64)
+    for i,f in enumerate(flist):
+        ticks[i]  = readNeoSpool(f,P,True)
+
+    F = Series(index=ticks,data=[f.stem for f in flist])
+    F.sort_index(inplace=True)
+
+    return F
+
 
 def mean16to8(I):
     #%% take mean and scale images

@@ -4,10 +4,8 @@ Reports first tick number in file vs filename
 I don't think filename are monotonic w.r.t. ticks.
 """
 from pathlib import Path
-import numpy as np
-from pandas import Series
 #
-from dmcutils.neospool import readNeoSpool,spoolparam
+from dmcutils.neospool import spoolparam,tickfile
 
 INIFN = 'acquisitionmetadata.ini' # autogen from Solis
 
@@ -27,13 +25,6 @@ if __name__ == '__main__':
         raise FileNotFoundError('no spool files found in ',path)
 
     P = spoolparam(flist[0].parent/INIFN)
-
-    ticks = np.empty(len(flist),dtype=np.uint64)
-    for i,f in enumerate(flist):
-        ticks[i]  = readNeoSpool(f,P,True)
-
-    F = Series(index=ticks,data=[f.stem for f in flist])
-    F.sort_index(inplace=True)
-
+    F = tickfile(flist,P)
 #%% print tick vs. filename
     print(F)
