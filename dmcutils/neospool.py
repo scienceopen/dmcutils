@@ -47,7 +47,7 @@ def _spoolframesize(inifn,nxy=(640,540),stride=1296):
     if 'ImageSizeBytes' in C['data']: # 2016-present format
         framebytes = C.getint('data','ImageSizeBytes') #including all headers & zeros
         nxy = (C.getint('data','AOIWidth'),C.getint('data','AOIHeight'))
-        stride = C.getint('AOIStride')
+        stride = C.getint('data','AOIStride')
 
         encoding = C.get('data','PixelEncoding')
 

@@ -5,12 +5,14 @@ basic plotting of Neo/Zyla sCMOS Andor Solis spool files, to confirm you have se
 """
 from pathlib import Path
 from matplotlib.pyplot import figure,draw,pause,show
+#import seaborn
 #
 from dmcutils.neospool import readNeoSpool
 
 INIFN = 'acquisitionmetadata.ini' # autogen from Solis
 PL= True
-IMAX = 500 # arbitrary max brightness
+IMAX = 400 # arbitrary max brightness
+HIST=False
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
@@ -29,13 +31,16 @@ if __name__ == '__main__':
         imgs,ticks = readNeoSpool(f,INIFN)
 
         if PL:
-            ax = figure(1).gca()
+            fg = figure(1)
+            ax = fg.gca()
             for I,t in zip(imgs,ticks):
-                ax.imshow(I, vmax=IMAX)
+                hi = ax.imshow(I, vmax=IMAX)
                 ax.set_title(f'tick: {t}')
-                draw(); pause(0.01)
+                fg.colorbar(hi,ax=ax)
+                draw(); pause(0.1)
 
+        if HIST:
             ax = figure(2).gca()
-            ax.hist(I.ravel(),bins=200)
+            ax.hist(imgs[0,...].ravel(),bins=200)
             ax.set_yscale('log')
             show()
