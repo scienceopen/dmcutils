@@ -21,10 +21,11 @@ if __name__ == '__main__':
     p = p.parse_args()
 
     path = Path(p.path).expanduser()
-
-    flist = sorted(path.glob('*.dat')) # list of spool files in this directory
-
-    if not flist:
+    if path.is_dir():
+        flist = sorted(path.glob('*.dat')) # list of spool files in this directory
+    elif path.is_file():
+        flist = [path]
+    else:
         raise FileNotFoundError('no spool files found in ',path)
 
     for f in flist:
@@ -33,14 +34,18 @@ if __name__ == '__main__':
         if PL:
             fg = figure(1)
             ax = fg.gca()
+            hi = ax.imshow(imgs[0], vmax=IMAX)
+            fg.colorbar(hi,ax=ax)
+            ht = ax.set_title('')
             for I,t in zip(imgs,ticks):
-                hi = ax.imshow(I, vmax=IMAX)
-                ax.set_title(f'tick: {t}')
-                fg.colorbar(hi,ax=ax)
+                hi.set_data(I)
+                ht.set_text(f'tick: {t}')
+
                 draw(); pause(0.1)
 
         if HIST:
             ax = figure(2).gca()
             ax.hist(imgs[0,...].ravel(),bins=200)
             ax.set_yscale('log')
-            show()
+
+    show()
