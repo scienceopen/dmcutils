@@ -100,7 +100,7 @@ def spoolparam(inifn:Path,nxy=(640,540),stride:int=1296) -> dict:
 
     return P
 
-def readNeoSpool(fn:Path,P:dict,tickonly:bool=False):
+def readNeoSpool(fn:Path, P:dict, tickonly:bool=False):
     """
     for 2012-present Neo/Zyla sCMOS Andor Solis spool files.
     reads a SINGLE spool file and returns the image frames & FPGA ticks
@@ -139,6 +139,12 @@ def readNeoSpool(fn:Path,P:dict,tickonly:bool=False):
 #%% read this spool file
     imgs = np.empty((P['nframe'],ny,nx), dtype=dtype)
     ticks  = np.zeros(P['nframe'], dtype=np.uint64)
+    if P['kinetic'] is not None:
+        tsec = np.empty(P['nframe'])
+        toffs = P['nfile']*P['nframe']*P['kinetic']
+    else:
+        tsec = None
+
     with fn.open('rb') as f:
         j=0
         for i in range(P['nframe']):
@@ -148,6 +154,10 @@ def readNeoSpool(fn:Path,P:dict,tickonly:bool=False):
 #%% get FPGA ticks value (propto elapsed time)
             # NOTE see ../Matlab/parseNeoHeader.m for other numbers, which are probably useless. Use struct.unpack() with them
                 ticks[j] = np.fromfile(f, dtype=np.uint64, count=P['stride']//8)[-2]
+
+                if tsec is not None:
+                    tsec[j] = j*P['kinetic'] + toffs
+
                 j+=1
             else: # file is over, rest will be all zeros from my experience
                 break
@@ -155,7 +165,7 @@ def readNeoSpool(fn:Path,P:dict,tickonly:bool=False):
     imgs = imgs[:j,...] # remove blank images Solis throws at the end sometimes.
     ticks = ticks[:j]
 
-    return imgs,ticks
+    return imgs,ticks,tsec
 
 def tickfile(flist,P,outfn):
     """
