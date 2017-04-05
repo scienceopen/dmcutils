@@ -59,7 +59,7 @@ if __name__ == '__main__':
         imgs,ticks,tsec = readNeoSpool(f, P)
 
         if PL:
-            for j in range(P['nframe']):
+            for j in range(P['nframefile']):
                 hi.set_data(imgs[i,...])
                 ttxt = f'{f.name}\ntick: {ticks[j]} '
                 if tsec is not None:
