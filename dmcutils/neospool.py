@@ -152,9 +152,11 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False):
     if ifrm is None:
         ifrm = range(P['nframefile'])
 
+    bytesperframe = npixframe*dtype(0).itemsize + P['stride']//8*np.uint64(0).itemsize
     with fn.open('rb') as f:
         j=0
         for i in ifrm:
+            f.seek(i*bytesperframe)
             img = np.fromfile(f, dtype=dtype, count=npixframe).reshape((ny,nx+zerorows))
             if not (img==0).all():
                 imgs[j,...] = img[:,xslice]
