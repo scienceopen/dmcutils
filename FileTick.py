@@ -20,5 +20,3 @@ if __name__ == '__main__':
 
     P = spoolparam(flist[0].parent/INIFN)
     F = tickfile(flist,P,p.tickfn)
-#%% print tick vs. filename
-    print(F)

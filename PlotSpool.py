@@ -23,18 +23,22 @@ if __name__ == '__main__':
 
     P = spoolparam(flist[0].parent/INIFN)
 
+#%% optional plotting
+    if PL:
+        imgs,ticks = readNeoSpool(flist[0],P)
+        fg = figure(1)
+        ax = fg.gca()
+        hi = ax.imshow(imgs[0], vmax=IMAX)
+        fg.colorbar(hi,ax=ax)
+        ht = ax.set_title('')
+
     for f in flist:
         imgs,ticks = readNeoSpool(f,P)
 
         if PL:
-            fg = figure(1)
-            ax = fg.gca()
-            hi = ax.imshow(imgs[0], vmax=IMAX)
-            fg.colorbar(hi,ax=ax)
-            ht = ax.set_title('')
             for I,t in zip(imgs,ticks):
                 hi.set_data(I)
-                ht.set_text(f'tick: {t}')
+                ht.set_text(f'{f.name} tick: {t}')
 
                 draw(); pause(0.1)
 
