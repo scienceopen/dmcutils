@@ -3,11 +3,10 @@
 """
 basic plotting of Neo/Zyla sCMOS Andor Solis spool files, to confirm you have settings correct.
 """
-from pathlib import Path
 from matplotlib.pyplot import figure,draw,pause,show
 #import seaborn
 #
-from dmcutils.neospool import readNeoSpool,spoolparam
+from dmcutils.neospool import readNeoSpool,spoolparam,spoolpath
 
 INIFN = 'acquisitionmetadata.ini' # autogen from Solis
 PL= True
@@ -20,13 +19,7 @@ if __name__ == '__main__':
     p.add_argument('path',help='path to Solis spool files')
     p = p.parse_args()
 
-    path = Path(p.path).expanduser()
-    if path.is_dir():
-        flist = sorted(path.glob('*.dat')) # list of spool files in this directory
-    elif path.is_file():
-        flist = [path]
-    else:
-        raise FileNotFoundError('no spool files found in ',path)
+    flist = spoolpath(p.path)
 
     P = spoolparam(flist[0].parent/INIFN)
 

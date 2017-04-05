@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from pathlib import Path
+from time import time
 import logging
 from configparser import ConfigParser
 from datetime import datetime
@@ -37,6 +38,22 @@ def findnewest(path):
     # max(fl2,key=getmtime)                             # 9.2us per loop, 8.1 time cache Py3.5,  # 6.2us per loop, 18 times cache  Py27
     #max((str(f) for f in flist), key=getmtime)         # 13us per loop, 20 times cache, # 10.1us per loop, no cache Py27
     return max(flist, key=lambda f: f.stat().st_mtime) #14.8us per loop, 7.5times cache, # 10.3us per loop, 21 times cache Py27
+
+def spoolpath(path):
+    path = Path(path).expanduser()
+
+    if path.is_dir():
+        flist = sorted(path.glob('*.dat')) # list of spool files in this directory
+    elif path.is_file():
+        flist = [path]
+    else:
+        raise FileNotFoundError(f'no spool files found in {path}')
+
+    assert flist,f'no files found in {path}'
+
+    print(f'{len(flist)} files found in {path}')
+
+    return flist
 
 def spoolparam(inifn:Path,nxy=(640,540),stride:int=1296) -> dict:
     assert inifn.is_file(),f'{inifn} does not exist.'
@@ -105,6 +122,14 @@ def readNeoSpool(fn:Path,P:dict,tickonly:bool=False):
     filebytes = fn.stat().st_size
     if P['nframe'] != filebytes // P['framebytes']:
         logging.critical('file may be read incorrectly -- wrong # of frames/file')
+
+#%% tick only jump
+    if tickonly:
+        with fn.open('rb') as f:
+            f.seek(npixframe*dtype(0).itemsize)
+            tick = np.fromfile(f, dtype=np.uint64, count=P['stride']//8)[-2]
+            return tick
+
 #%% read this spool file
     imgs = np.empty((P['nframe'],ny,nx), dtype=dtype)
     ticks  = np.zeros(P['nframe'], dtype=np.uint64)
@@ -117,9 +142,6 @@ def readNeoSpool(fn:Path,P:dict,tickonly:bool=False):
 #%% get FPGA ticks value (propto elapsed time)
             # NOTE see ../Matlab/parseNeoHeader.m for other numbers, which are probably useless. Use struct.unpack() with them
                 ticks[j] = np.fromfile(f, dtype=np.uint64, count=P['stride']//8)[-2]
-                if tickonly:
-                    return ticks[0]
-
                 j+=1
             else: # file is over, rest will be all zeros from my experience
                 break
@@ -129,16 +151,29 @@ def readNeoSpool(fn:Path,P:dict,tickonly:bool=False):
 
     return imgs,ticks
 
-def tickfile(flist,P):
+def tickfile(flist,P,outfn):
     """
     sorts filenames into FPGA tick order so that you can read video in time order
     """
+    print('ordering randomly named spool files vs. time (ticks)')
+
+    tic = time()
     ticks = np.empty(len(flist),dtype=np.uint64)
     for i,f in enumerate(flist):
         ticks[i]  = readNeoSpool(f,P,True)
+        if not i % 100:
+            print(f'{i/len(flist)*100:.1f} %')
 
     F = Series(index=ticks,data=[f.stem for f in flist])
     F.sort_index(inplace=True)
+    print(f'sorted {len(flist)} files vs. time ticks in {time()-tic:.1f} seconds')
+
+    if outfn is not None:
+        outfn = Path(outfn).expanduser()
+        if outfn.is_dir():
+            outfn = outfn/'ticks.h5'
+        print(f'writing {outfn}')
+        F.to_hdf(outfn,'filetick',mode='w')
 
     return F
 

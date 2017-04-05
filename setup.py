@@ -2,7 +2,7 @@
 from setuptools import setup
 
 req=['histutils','astrometry_azel','morecvutils',
-     'nose','python-dateutil','pytz','pandas','h5py','scikit-image','matplotlib']
+     'nose','python-dateutil','pytz','pandas','tables','h5py','scikit-image','matplotlib']
 
 setup(name='dmcutils',
       packages=['dmcutils'],
