@@ -19,4 +19,4 @@ if __name__ == '__main__':
     flist = spoolpath(p.path)
 
     P = spoolparam(flist[0].parent/INIFN)
-    F = tickfile(flist, P, tickonly=p.tickfn)
+    F = tickfile(flist, P, p.tickfn)
