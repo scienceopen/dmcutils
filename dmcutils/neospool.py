@@ -99,7 +99,7 @@ def spoolparam(inifn:Path, superx=640, supery=540, stride:int=1296) -> dict:
     P = {'superx': superx,
          'supery': supery,
          'nframefile':Nframe,
-         'stride':stride,
+         'stride': np.int64(stride),  # np.int64, not int required for windows
          'framebytes':framebytes,
          'bpp':bpp}
 
