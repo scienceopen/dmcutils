@@ -191,7 +191,7 @@ def tickfile(flist:list, P:dict, outfn:Path) -> Series:
     print('ordering randomly named spool files vs. time (ticks)')
 
     tic = time()
-    ticks = np.empty(len(flist),dtype=int)
+    ticks = np.empty(len(flist), dtype='int64')  # must be int64, not int for Windows in general.
     for i,f in enumerate(flist):
         ticks[i]  = readNeoSpool(f,P,0,True)
         if not i % 100:
