@@ -99,7 +99,7 @@ def spoolparam(inifn:Path, superx=640, supery=540, stride:int=1296) -> dict:
     P = {'superx': superx,
          'supery': supery,
          'nframefile':Nframe,
-         'stride': np.int64(stride),  # np.int64, not int required for windows
+         'stride': stride,
          'framebytes':framebytes,
          'bpp':bpp}
 
@@ -149,7 +149,7 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False):
         ifrm = np.asarray(ifrm, dtype=np.int64)
 
     imgs = np.empty((len(ifrm),ny,nx), dtype=dtype)
-    ticks  = np.zeros(P['nframefile'], dtype=int)
+    ticks  = np.zeros(P['nframefile'], dtype=np.int64)
     if 'kinetic' in P and P['kinetic'] is not None:
         tsec = np.empty(P['nframefile'])
         toffs = P['nfile']*P['nframefile']*P['kinetic']
