@@ -144,7 +144,7 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False):
 # %% read this spool file
 
     if ifrm is None:
-        ifrm = np.arange(P['nframefile'])
+        ifrm = np.arange(P['nframefile'], dtype=np.int64)  # int64 required for Windows
     elif isinstance(ifrm,int):
         ifrm = [ifrm]
 
