@@ -145,8 +145,8 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False):
 
     if ifrm is None:
         ifrm = np.arange(P['nframefile'], dtype=np.int64)  # int64 required for Windows
-    elif isinstance(ifrm,int):
-        ifrm = [ifrm]
+    else:
+        ifrm = np.array([ifrm], dtype=np.int64)
 
     imgs = np.empty((len(ifrm),ny,nx), dtype=dtype)
     ticks  = np.zeros(P['nframefile'], dtype=int)
