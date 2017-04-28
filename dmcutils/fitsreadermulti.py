@@ -46,7 +46,7 @@ def fitsreadermulti(flist,outfn):
             with fits.open(str(f),'readonly') as h:
                 N = h[0].shape[0]
 
-                finf = getNeoParam(f)[0]
+                finf = getNeoParam(f)
                 ut1_unix[lastframe:lastframe+N] = finf['ut1']
 
                 imgwriteincr(outfn,h[0].data,slice(lastframe,lastframe+N))
