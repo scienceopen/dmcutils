@@ -178,7 +178,7 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False, zerocols=0):
     imgs = imgs[:j,...] # remove blank images Solis throws at the end sometimes.
     ticks = ticks[:j]
 
-    return imgs,ticks,tsec
+    return imgs, ticks, tsec
 
 def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
     """
