@@ -13,7 +13,6 @@ try:
     import cv2
 except ImportError:
     cv2=None  #fall back to scipy imsave, no time annotation
-
 try:
     import matlab.engine
 except ImportError:
@@ -61,7 +60,7 @@ def spoolpath(path):
 
     return flist
 
-def spoolparam(inifn:Path, superx=640, supery=540, stride:int=1296) -> dict:
+def spoolparam(inifn:Path, superx:int, supery:int, stride:int) -> dict:
     inifn = Path(inifn).expanduser()
 
     if not inifn.is_file():
@@ -87,8 +86,6 @@ def spoolparam(inifn:Path, superx=640, supery=540, stride:int=1296) -> dict:
     elif 'ImageSize' in C['data']: # 2012-201? format
         framebytes = C.getint('data','ImageSize')
 
-        logging.warning('Nxy,stride are hard coded for specific DMC experiment!!')
-
         # TODO arbitrary sanity check.
         if superx*supery*2 < 0.9*framebytes or superx*supery*2 > 0.999 * framebytes:
             logging.critical('unlikely this format is read correctly. Was binning/frame size different?')
@@ -105,7 +102,7 @@ def spoolparam(inifn:Path, superx=640, supery=540, stride:int=1296) -> dict:
 
     return P
 
-def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False):
+def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False, zerocols=0):
     """
     for 2012-present Neo/Zyla sCMOS Andor Solis spool files.
     reads a SINGLE spool file and returns the image frames & FPGA ticks
@@ -114,18 +111,19 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False):
 
     nx, ny=P['superx'], P['supery']
 
-    if P['bpp']==16: # 2012-2015ish
-        zerorows=8
+    if P['bpp']==16: # 2013-2015ish
         dtype = np.uint16
-        xslice = slice(None,-zerorows)
+        if zerocols>0:
+            xslice = slice(None,-zerocols)
+        else:
+            xslice = slice(None)
     elif P['bpp']==32: # 2016-present
-        zerorows=0
         dtype = np.uint32
         xslice=slice(None)
     else:
         raise NotImplementedError('unknown spool format')
 
-    npixframe = (nx+zerorows)*ny
+    npixframe = (nx+zerocols)*ny
 #%% check size of spool file
     if not P['framebytes'] == (npixframe * P['bpp']//8) + P['stride']:
         logging.critical('file may be read incorrectly--wrong framebytes')
@@ -133,11 +131,10 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False):
     filebytes = fn.stat().st_size
     if P['nframefile'] != filebytes // P['framebytes']:
         logging.critical('file may be read incorrectly -- wrong # of frames/file')
-
 # %% tick only jump
     if tickonly:
         with fn.open('rb') as f:
-            f.seek(npixframe*dtype(0).itemsize)
+            f.seek(npixframe*dtype(0).itemsize, 0)
             tick = np.fromfile(f, dtype=np.uint64, count=P['stride']//8)[-2]
             return tick
 
@@ -149,7 +146,7 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False):
         ifrm = np.asarray(ifrm, dtype=np.int64)
 
     imgs = np.empty((len(ifrm),ny,nx), dtype=dtype)
-    ticks  = np.zeros(P['nframefile'], dtype=np.int64)
+    ticks  = np.zeros(len(ifrm), dtype=np.int64)
     if 'kinetic' in P and P['kinetic'] is not None:
         tsec = np.empty(P['nframefile'])
         toffs = P['nfile']*P['nframefile']*P['kinetic']
@@ -157,12 +154,13 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False):
         tsec = None
 
     bytesperframe = npixframe*dtype(0).itemsize + P['stride']//8*np.uint64(0).itemsize
+    assert bytesperframe == P['framebytes']
     with fn.open('rb') as f:
         j=0
         for i in ifrm:
-            f.seek(i*bytesperframe)
+            f.seek(i*bytesperframe, 0)
 
-            img = np.fromfile(f, dtype=dtype, count=npixframe).reshape((ny, nx+zerorows))
+            img = np.fromfile(f, dtype=dtype, count=npixframe).reshape((ny, nx+zerocols))
 
             if (img==0).all():  # old < ~2010 Solis spool file is over
                 break
@@ -182,7 +180,7 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False):
 
     return imgs,ticks,tsec
 
-def tickfile(flist:list, P:dict, outfn:Path) -> Series:
+def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
     """
     sorts filenames into FPGA tick order so that you can read video in time order
     """
@@ -193,7 +191,7 @@ def tickfile(flist:list, P:dict, outfn:Path) -> Series:
     tic = time()
     ticks = np.empty(len(flist), dtype='int64')  # must be int64, not int for Windows in general.
     for i,f in enumerate(flist):
-        ticks[i]  = readNeoSpool(f,P,0,True)
+        ticks[i]  = readNeoSpool(f,P,0,True,zerocol)
         if not i % 100:
             print(f'{i/len(flist)*100:.1f} %')
 
