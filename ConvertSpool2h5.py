@@ -65,7 +65,7 @@ def converter(p):
                 fn = Path(path.parent/fn)
                 P['spoolfn'] = fn
                 imgs, ticks, tsec = readNeoSpool(fn, P, zerocols=p.zerocols)
-                vid2h5(imgs, None, None, ticks, p.outfn, P, argv, i, len(flist2))
+                vid2h5(imgs, None, None, ticks, p.outfn, P, argv, i, len(flist2), det)
         else:
             print('writing metadata')
             rawind,ut1_unix = h5toh5(path, p.kineticsec, p.startutc)
