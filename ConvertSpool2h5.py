@@ -3,6 +3,8 @@
 Michael Hirsch
 Sept 2015
 
+Streams data from  spool file input disk to HDF5 output disk (both USB HDD) at 30 MB/s. Did not attempt to optimize.
+
 # Example for CV_ionosphere automatic auroral detection output
 1. ./FileTick.py
 2. ../cv_ionosphere/Detect.py
@@ -61,6 +63,7 @@ def converter(p):
             # append to HDF5 one spool file at a time to conserve RAM
             for i,fn in enumerate(flist2):
                 fn = Path(path.parent/fn)
+                P['spoolfn'] = fn
                 imgs, ticks, tsec = readNeoSpool(fn, P, zerocols=p.zerocols)
                 vid2h5(imgs, None, None, ticks, p.outfn, P, argv, i, len(flist2))
         else:
