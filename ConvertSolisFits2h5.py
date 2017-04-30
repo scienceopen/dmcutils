@@ -15,7 +15,7 @@ def main(flist,ofn, P,cmdlog):
     P['kineticsec'] = kineticsec
     P['header'] = header
 
-    vid2h5(None,ut1_unix, rawind, ofn, P, cmdlog)
+    vid2h5(None,ut1_unix, rawind, None, ofn, P, cmdlog)
 
 
 

@@ -8,9 +8,9 @@ from astropy.io import fits
 from numpy import empty,nan
 #
 from histutils.rawDMCreader import getNeoParam
-from histutils.h5imgwriter import setupimgh5,imgwriteincr
+from histutils import setupimgh5,imgwriteincr
 
-def fitsreadermulti(flist,outfn):
+def fitsreadermulti(flist, outfn):
 
     outfn = Path(outfn).expanduser()
     flist = [Path(f).expanduser() for f in flist]
@@ -41,7 +41,7 @@ def fitsreadermulti(flist,outfn):
 
     lastframe = 0
     for f in flist:
-        print('reading {}'.format(f))
+        print('reading',f)
         try:
             with fits.open(str(f),'readonly') as h:
                 N = h[0].shape[0]

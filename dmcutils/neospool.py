@@ -18,6 +18,7 @@ try:
 except ImportError:
     matlab = None
 #
+from histutils import setupimgh5
 from histutils.timedmc import frame2ut1
 
 
@@ -60,7 +61,7 @@ def spoolpath(path):
 
     return flist
 
-def spoolparam(inifn:Path, superx:int, supery:int, stride:int) -> dict:
+def spoolparam(inifn:Path, superx:int=None, supery:int=None, stride:int=None) -> dict:
     inifn = Path(inifn).expanduser()
 
     if not inifn.is_file():
@@ -109,7 +110,7 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False, zerocols=0):
     """
     #%% parse header
 
-    nx, ny=P['superx'], P['supery']
+    nx, ny= P['superx'], P['supery']
 
     if P['bpp']==16: # 2013-2015ish
         dtype = np.uint16
@@ -137,16 +138,15 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False, zerocols=0):
             f.seek(npixframe*dtype(0).itemsize, 0)
             tick = np.fromfile(f, dtype=np.uint64, count=P['stride']//8)[-2]
             return tick
-
 # %% read this spool file
-
     if ifrm is None:
         ifrm = np.arange(P['nframefile'], dtype=np.int64)  # int64 required for Windows
     else:
         ifrm = np.asarray(ifrm, dtype=np.int64)
 
     imgs = np.empty((len(ifrm),ny,nx), dtype=dtype)
-    ticks  = np.zeros(len(ifrm), dtype=np.int64)
+    ticks  = np.zeros(len(ifrm), dtype=np.uint64)
+
     if 'kinetic' in P and P['kinetic'] is not None:
         tsec = np.empty(P['nframefile'])
         toffs = P['nfile']*P['nframefile']*P['kinetic']
@@ -162,8 +162,8 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False, zerocols=0):
 
             img = np.fromfile(f, dtype=dtype, count=npixframe).reshape((ny, nx+zerocols))
 
-            if (img==0).all():  # old < ~2010 Solis spool file is over
-                break
+#            if (img==0).all():  # old < ~2010 Solis spool file is over
+#                break
 
             imgs[j,...] = img[:,xslice]
 # %% get FPGA ticks value (propto elapsed time)
@@ -235,8 +235,8 @@ def annowrite(I,newfn,pngfn):
         cv2.imwrite(str(pngfn),I) #if using color, remember opencv requires BGR color order
     else:
         imsave(str(pngfn),I)
-
-def oldspool(path,xy,bn,kineticsec,startutc,outfn):
+# %%
+def oldspool(path, xy, bn, kineticsec, startutc, outfn):
     """
     for old 2011 solis with defects 12 bit, big endian, little endian alternating
     """
@@ -258,34 +258,25 @@ def oldspool(path,xy,bn,kineticsec,startutc,outfn):
         raise FileNotFoundError(f'no files found  {path}')
 
     print(f'Found {nfile} .dat files in {path}')
-#%%
+#%% use matlab to unpack corrupt file
     if matlab:
         print('starting Matlab')
-        eng = matlab.engine.start_matlab("-nojvm")
+        eng = matlab.engine.start_matlab("-nojvm")  # nojvm makes vastly faster, disables plots
     else:
         raise ImportError('matlab engine not yet setup. see\n https://scivision.co/matlab-engine-callable-from-python-how-to-install-and-setup/' )
 
     try:
         nx,ny= xy[0]//bn[0], xy[1]//bn[1]
 
-        with h5py.File(str(outfn),'w',libver='latest') as fh5:
-            fimg = fh5.create_dataset('/rawimg',(nfile,ny,nx),
-                                      dtype=np.int16,
-                                      compression='gzip',
-                                      compression_opts=4,
-                                      track_times=True)
-            fimg.attrs["CLASS"] = np.string_("IMAGE")
-            fimg.attrs["IMAGE_VERSION"] = np.string_("1.2")
-            fimg.attrs["IMAGE_SUBCLASS"] = np.string_("IMAGE_GRAYSCALE")
-            fimg.attrs["DISPLAY_ORIGIN"] = np.string_("LL")
-            fimg.attrs['IMAGE_WHITE_IS_ZERO'] = np.uint8(0)
+        with h5py.File(outfn, 'w', libver='latest') as fh5:
+            fimg = setupimgh5(fh5,nfile,ny,nx)
 
-            for i,f in enumerate(flist):
+            for i,f in enumerate(flist): # these old spool files were named sequentially... not so since 2012 or so!
                 print(f'processing {f}   {i+1} / {nfile}')
                 try:
                     datmat = eng.readNeoPacked12bit(str(f), nx,ny)
                     assert datmat.size == (ny,nx)
-                    fimg[i,...] = datmat
+                    fimg[i,...] = datmat  # slow due to implicit casting from Matlab array to Numpy array--only way to do it.
                 except AssertionError as e:
                     logging.critical(f'matlab returned improper size array {e}')
                 except Exception as e:
@@ -301,6 +292,7 @@ def oldspool(path,xy,bn,kineticsec,startutc,outfn):
 
 def h5toh5(fn,kineticsec,startutc):
     fn = Path(fn).expanduser()
+
     with h5py.File(str(fn),'r',libver='latest') as f:
         data = f['/rawimg']
 
