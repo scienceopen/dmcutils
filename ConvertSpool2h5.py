@@ -51,7 +51,7 @@ def converter(p):
             with h5py.File(detfn,'r',libver='latest') as f:
                 det = f['/detect'][:]
                 
-            upfact = np.ceil(flist.shape[0]//det.size)
+            upfact = int(np.ceil(flist.shape[0]//det.size))
             assert 1 <= upfact <= 20, 'was file sampled correctly?'
             det2 = np.zeros(flist.shape[0])
             det2[::upfact] = det  # gaps are zeros
