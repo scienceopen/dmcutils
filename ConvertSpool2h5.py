@@ -9,7 +9,7 @@ Example performance: 4128 spool files selected by Detect.py, each with 47 320x27
 That's 35 MB/sec.
 
 # Example for CV_ionosphere automatic auroral detection output
-1. ./FileTick.py
+1. ./FileTick.py  z:\2017-04-04a\spool
 2. ../cv_ionosphere/Detect.py
 3. ./ConvertSpool2h5.py z:\2017-04-04a\spool\index.h5 -det z:\2017-04-04a\auroraldet.h5
 
