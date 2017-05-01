@@ -199,19 +199,21 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
     F.sort_index(inplace=True)
     print(f'sorted {len(flist)} files vs. time ticks in {time()-tic:.1f} seconds')
 
-    if outfn is not None:
-        outfn = Path(outfn).expanduser()
-        if outfn.is_dir():
-            outfn = outfn/'ticks.h5'
+    if not outfn:
+        outfn = flist[0].parent
 
-        if outfn.is_file():
-            if outfn.suffix != '.h5':
-                outfn = outfn.with_suffix('.h5')
+    outfn = Path(outfn).expanduser()
+    if outfn.is_dir():
+        outfn = outfn/'index.h5'
 
-        print(f'writing {outfn}')
-        F.to_hdf(outfn,'filetick',mode='w')
-        with h5py.File(outfn,'a',libver='latest') as f:
-            f['path'] = str(flist[0].parent)
+    if outfn.is_file():
+        if outfn.suffix != '.h5':
+            outfn = outfn.with_suffix('.h5')
+
+    print(f'writing {outfn}')
+    F.to_hdf(outfn,'filetick',mode='w')
+    with h5py.File(outfn,'a',libver='latest') as f:
+        f['path'] = str(flist[0].parent)
 
     return F
 

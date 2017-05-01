@@ -6,6 +6,8 @@ I don't think filename are monotonic w.r.t. ticks.
 ./FileTick.py ~/H/neo2012-12-25/spool_5/ -xy 320 270 -s 648 -z 4
 
 ./FileTick.py ~/data/testdmc
+
+python FileTick.py z:\2017-04-27\spool
 """
 
 from dmcutils.neospool import spoolparam,tickfile,spoolpath
