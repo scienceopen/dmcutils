@@ -44,13 +44,15 @@ def converter(p):
             2. read detection file
             3. convert specified file to HDF5
             """
+            spoolini = path.parent/'acquisitionmetadata.ini'
+            tstart = spoolini.stat().st_ctime  # crude measure of start time
 # %% 1.
             flist = read_hdf(path,'filetick')
 # %% 2. select which file to convert...automatically
             detfn = Path(p.detfn).expanduser()
             with h5py.File(detfn,'r',libver='latest') as f:
                 det = f['/detect'][:]
-                
+
             upfact = flist.shape[0]//det.size
             assert 1 <= upfact <= 20, 'was file sampled correctly?'
             det2 = np.zeros(flist.shape[0])
@@ -58,12 +60,12 @@ def converter(p):
 
             assert abs(len(flist) - det2.size) <= 20,f'{detfn} and {path} are maybe not for the same spool data file directory'
             det = det2
-            
+
             Lkeep = np.ones(51,dtype=int)  # keeps Lkeep/2 files each side of first/last detection.
 
             ikeep = np.convolve(det,Lkeep,'same').astype(bool)
 # %% 3.
-            Fparam = spoolparam(path.parent/'acquisitionmetadata.ini',
+            Fparam = spoolparam(spoolini,
                                 p.xy[0]//p.bin[0], p.xy[1]//p.bin[1], p.stride)
             P = {**P,**Fparam}
 
@@ -75,7 +77,7 @@ def converter(p):
                 fn = Path(path.parent/fn)
                 P['spoolfn'] = fn
                 imgs, ticks, tsec = readNeoSpool(fn, P, zerocols=p.zerocols)
-                vid2h5(imgs, None, None, ticks, p.outfn, P, argv, i, len(flist2), det)
+                vid2h5(imgs, None, None, ticks, p.outfn, P, argv, i, len(flist2), det, tstart)
         else:
             print('writing metadata')
             rawind,ut1_unix = h5toh5(path, p.kineticsec, p.startutc)
