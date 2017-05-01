@@ -54,7 +54,7 @@ def converter(p):
             upfact = flist.shape[0]//det.size
             assert 1 <= upfact <= 20, 'was file sampled correctly?'
             det2 = np.zeros(flist.shape[0])
-            det2[:det.size*upfact:upfact] = det  # gaps are zeros
+            det2[:det.size*upfact-1:upfact] = det  # gaps are zeros
 
             assert abs(len(flist) - det2.size) <= 20,f'{detfn} and {path} are maybe not for the same spool data file directory'
             det = det2
