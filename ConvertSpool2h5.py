@@ -50,8 +50,15 @@ def converter(p):
             detfn = Path(p.detfn).expanduser()
             with h5py.File(detfn,'r',libver='latest') as f:
                 det = f['/detect'][:]
+                
+            upfact = flist.shape[0]//det.size
+            assert 1 <= upfact <= 20, 'was file sampled correctly?'
+            det2 = np.zeros(flist.shape[0])
+            det2[::upfact] = det  # gaps are zeros
 
-            assert len(flist) == det.size + 1,f'{detfn} and {path} are not for the same spool data file directory'
+            assert abs(len(flist) - det2.size) <= 20,f'{detfn} and {path} are maybe not for the same spool data file directory'
+            det = det2
+            
             Lkeep = np.ones(51,dtype=int)  # keeps Lkeep/2 files each side of first/last detection.
 
             ikeep = np.convolve(det,Lkeep,'same').astype(bool)
