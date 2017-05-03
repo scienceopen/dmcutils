@@ -10,7 +10,8 @@ That's 35 MB/sec.
 
 # Example for CV_ionosphere automatic auroral detection output
 1. ./FileTick.py  z:\2017-04-04a\spool
-2. ../cv_ionosphere/Detect.py
+2. ../cv_ionosphere/Detect.py z:\2017-04-0a\spool\index.h5 z:\2017-04-27\ dmc2017.ini -k 10
+2a. (optional patch for bad detect) ../cv_ionosphere/PatchAuroraldet.py
 3. ./ConvertSpool2h5.py z:\2017-04-04a\spool\index.h5 -det z:\2017-04-04a\auroraldet.h5
 
 ./ConvertSpool2h5.py ~/H/neo2012-12-25/spool_5/index.h5 -det ~/data/2012-12-25/auroraldet.h5 -o ~/data/2012-12-25/extracted.h5 -xy 320 270 -stride 648 -z 4
