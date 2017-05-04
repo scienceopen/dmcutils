@@ -108,6 +108,7 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False, zerocols=0):
     for 2012-present Neo/Zyla sCMOS Andor Solis spool files.
     reads a SINGLE spool file and returns the image frames & FPGA ticks
     """
+    assert fn.suffix == '.dat',f'you need to pass a spool file, you passed {fn}'
     #%% parse header
 
     nx, ny= P['superx'], P['supery']
@@ -127,11 +128,11 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False, zerocols=0):
     npixframe = (nx+zerocols)*ny
 #%% check size of spool file
     if not P['framebytes'] == (npixframe * P['bpp']//8) + P['stride']:
-        logging.critical('file may be read incorrectly--wrong framebytes')
+        raise IOError('file may be read incorrectly--wrong framebytes')
 
     filebytes = fn.stat().st_size
     if P['nframefile'] != filebytes // P['framebytes']:
-        logging.critical('file may be read incorrectly -- wrong # of frames/file')
+        raise IOError('file may be read incorrectly -- wrong # of frames/file')
 # %% tick only jump
     if tickonly:
         with fn.open('rb') as f:
