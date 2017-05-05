@@ -65,6 +65,7 @@ def converter(p):
             Lkeep = np.ones(51,dtype=int)  # keeps Lkeep/2 files each side of first/last detection.
 
             ikeep = np.convolve(det,Lkeep,'same').astype(bool)
+            det = det[ikeep]
 # %% 3.
             Fparam = spoolparam(spoolini,
                                 p.xy[0]//p.bin[0], p.xy[1]//p.bin[1], p.stride)
