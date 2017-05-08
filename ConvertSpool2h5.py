@@ -50,22 +50,27 @@ def converter(p):
 # %% 1.
             flist = read_hdf(path,'filetick')
 # %% 2. select which file to convert...automatically
-            detfn = Path(p.detfn).expanduser()
-            with h5py.File(detfn,'r',libver='latest') as f:
-                det = f['/detect'][:]
+            if p.detfn:
+                detfn = Path(p.detfn).expanduser()
+                with h5py.File(detfn,'r',libver='latest') as f:
+                    det = f['/detect'][:]
 
-            upfact = flist.shape[0]//det.size
-            assert 1 <= upfact <= 20, 'was file sampled correctly?'
-            det2 = np.zeros(flist.shape[0])
-            det2[:det.size*upfact-1:upfact] = det  # gaps are zeros
+                upfact = flist.shape[0]//det.size
+                assert 1 <= upfact <= 20, 'was file sampled correctly?'
+                det2 = np.zeros(flist.shape[0])
+                det2[:det.size*upfact-1:upfact] = det  # gaps are zeros
 
-            assert abs(len(flist) - det2.size) <= 20,f'{detfn} and {path} are maybe not for the same spool data file directory'
-            det = det2
+                assert abs(len(flist) - det2.size) <= 20,f'{detfn} and {path} are maybe not for the same spool data file directory'
+                det = det2
 
-            Lkeep = np.ones(51,dtype=int)  # keeps Lkeep/2 files each side of first/last detection.
+                Lkeep = np.ones(51,dtype=int)  # keeps Lkeep/2 files each side of first/last detection.
 
-            ikeep = np.convolve(det,Lkeep,'same').astype(bool)
-            det = det[ikeep]
+                ikeep = np.convolve(det,Lkeep,'same').astype(bool)
+                det = det[ikeep]
+            else:  # just convert all spool files (can be terabyte+ of data into HDF5)
+                print('no detection file specified, converting all Spool files')
+                det = np.ones(flist.shape[0],dtype=bool)
+                ikeep = None
 # %% 3.
             Fparam = spoolparam(spoolini,
                                 p.xy[0]//p.bin[0], p.xy[1]//p.bin[1], p.stride)
