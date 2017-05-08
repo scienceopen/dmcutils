@@ -15,9 +15,12 @@ That's 35 MB/sec.
 3. ./ConvertSpool2h5.py z:\2017-04-04a\spool\index.h5 -det z:\2017-04-04a\auroraldet.h5
 
 ./ConvertSpool2h5.py ~/H/neo2012-12-25/spool_5/index.h5 -det ~/data/2012-12-25/auroraldet.h5 -o ~/data/2012-12-25/extracted.h5 -xy 320 270 -stride 648 -z 4
+or to convert all spool files without regard to detections
+./ConvertSpool2h5.py ~/H/neo2012-12-25/spool_5/index.h5 -o ~/data/2012-12-25/extracted.h5 -xy 320 270 -stride 648 -z 4
 """
 from time import time
 from sys import argv
+from dateutil.parser import parse
 from pathlib import Path
 import h5py
 from pandas import read_hdf
@@ -42,11 +45,15 @@ def converter(p):
         if tickfile:
             """
             1. read index file
-            2. read detection file
+            2. (optional) read detection file
             3. convert specified file to HDF5
             """
-            spoolini = path.parent/'acquisitionmetadata.ini'
-            tstart = spoolini.stat().st_ctime  # crude measure of start time
+            spoolini = path.parent / 'acquisitionmetadata.ini'
+            if p.startutc is None:
+                tstart = spoolini.stat().st_ctime  # crude measure of start time
+            else:
+                tstart = parse(p.startutc).timestamp()
+            assert isinstance(tstart,(float,int))
 # %% 1.
             flist = read_hdf(path,'filetick')
 # %% 2. select which file to convert...automatically
@@ -70,7 +77,7 @@ def converter(p):
             else:  # just convert all spool files (can be terabyte+ of data into HDF5)
                 print('no detection file specified, converting all Spool files')
                 det = np.ones(flist.shape[0],dtype=bool)
-                ikeep = None
+                ikeep = slice(None)
 # %% 3.
             Fparam = spoolparam(spoolini,
                                 p.xy[0]//p.bin[0], p.xy[1]//p.bin[1], p.stride)
