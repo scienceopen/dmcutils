@@ -21,7 +21,7 @@ import matplotlib.animation as anim
 import seaborn as sns
 sns.set_context('talk',font_scale=1.5)
 #
-# git clone https://github.com/scienceopen/pymap3d
+# git clone https://github.com/scivision/pymap3d
 # cd pymap3d && python setup.py develop
 from pymap3d.haversine import angledist
 

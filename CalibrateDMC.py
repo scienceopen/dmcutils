@@ -9,9 +9,9 @@ Michael Hirsch
 from pathlib import Path
 from tempfile import mkstemp
 #
-# REQUIRES https://github.com/scienceopen/astrometry_azel
+# REQUIRES https://github.com/scivision/astrometry_azel
 from astrometry_azel.imgAvgStack import meanstack,writefits
-from astrometry_azel.fits2azel import fits2azel
+from astrometry_azel import fits2azel
 
 def doplatescale(infn,outfn,latlon,ut1):
     fitsfn = Path(outfn).expanduser().with_suffix('.fits')
