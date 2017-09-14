@@ -85,7 +85,7 @@ def converter(p):
                                 p.xy[0]//p.bin[0], p.xy[1]//p.bin[1], p.stride)
             P = {**P,**Fparam}
 
-            flist2 = flist[:-1][ikeep]
+            flist2 = flist[ikeep]
             print(f'keeping/converting {flist2.shape[0]} out of {flist.shape[0]} files in {path}')
 
             # append to HDF5 one spool file at a time to conserve RAM
