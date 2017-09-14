@@ -75,7 +75,7 @@ def converter(p):
                 ikeep = np.convolve(det,Lkeep,'same').astype(bool)
                 det = det[ikeep]
 
-                assert len(det) == ikeep.sum() == len(flist),f'len(det): {len(det)}  len(flist): {len(flist)} len(ikeep): {len(ikeep)}'
+                assert len(det) == ikeep.sum() == len(flist),f'len(det): {len(det)}  len(flist): {len(flist)} len(ikeep): {len(ikeep)}  ikeep.sum(): {ikeep.sum()}'
             else:  # just convert all spool files (can be terabyte+ of data into HDF5)
                 print('no detection file specified, converting all Spool files')
                 det = np.ones(flist.shape[0],dtype=bool)
