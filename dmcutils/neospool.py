@@ -55,8 +55,6 @@ def spoolpath(path):
     else:
         raise FileNotFoundError(f'no spool files found in {path}')
 
-    assert flist,f'no files found in {path}'
-
     print(f'{len(flist)} files found: {path}')
 
     return flist

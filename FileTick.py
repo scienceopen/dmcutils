@@ -26,6 +26,8 @@ if __name__ == '__main__':
     p = p.parse_args()
 
     flist = spoolpath(p.path)
+    if len(flist)==0:
+        raise FileNotFoundError(f'no files found in {p.path}')
 
     P = spoolparam(flist[0].parent/INIFN, p.xy[0], p.xy[1], p.stride)
     F = tickfile(flist, P, p.tickfn, p.zerocols)
