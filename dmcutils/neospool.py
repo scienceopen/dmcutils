@@ -13,10 +13,6 @@ try:
     import cv2
 except ImportError:
     cv2=None  #fall back to scipy imsave, no time annotation
-try:
-    import matlab.engine
-except ImportError:
-    matlab = None
 #
 from histutils import setupimgh5
 from histutils.timedmc import frame2ut1
@@ -238,6 +234,10 @@ def annowrite(I,newfn,pngfn):
         imsave(str(pngfn),I)
 # %%
 def oldspool(path, xy, bn, kineticsec, startutc, outfn):
+    try:
+        import matlab.engine
+    except ImportError:
+        matlab = None
     """
     for old 2011 solis with defects 12 bit, big endian, little endian alternating
     """

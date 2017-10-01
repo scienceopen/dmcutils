@@ -18,6 +18,7 @@ That's 35 MB/sec.
 or to convert all spool files without regard to detections
 ./ConvertSpool2h5.py ~/H/neo2012-12-25/spool_5/index.h5 -o ~/data/2012-12-25/extracted.h5 -xy 320 270 -stride 648 -z 4
 """
+import logging
 from time import time
 from sys import argv
 from dateutil.parser import parse
@@ -28,6 +29,8 @@ import numpy as np
 #
 from histutils import vid2h5
 from dmcutils.neospool import oldspool,h5toh5, readNeoSpool,spoolparam
+
+W = 51  # keep +/-  W/2 frames around detection
 
 def converter(p):
     tic = time()
@@ -62,15 +65,22 @@ def converter(p):
                 with h5py.File(detfn,'r',libver='latest') as f:
                     det = f['/detect'][:]
 
-                upfact = flist.shape[0]//det.size
-                assert 1 <= upfact <= 20, 'was file sampled correctly?'
+                upfact = flist.shape[0] // det.size
+
+                if not 1 <= upfact <= 20:
+                    logging.error(f'was {detfn} sampled correctly?')
+                    return
+
                 det2 = np.zeros(flist.shape[0])
-                det2[:det.size*upfact-1:upfact] = det  # gaps are zeros
+                try:
+                    det2[:det.size*upfact-1:upfact] = det  # gaps are zeros
+                except ValueError: # off by one
+                    det2[:det.size*upfact:upfact] = det  # gaps are zeros
 
                 assert abs(len(flist) - det2.size) <= 20,f'{detfn} and {path} are maybe not for the same spool data file directory'
                 det = det2
 
-                Lkeep = np.ones(51,dtype=int)  # keeps Lkeep/2 files each side of first/last detection.
+                Lkeep = np.ones(min(len(flist),W),dtype=int)  # keeps Lkeep/2 files each side of first/last detection.
 
                 ikeep = np.convolve(det,Lkeep,'same').astype(bool)
                 det = det[ikeep]
