@@ -113,7 +113,8 @@ def converter(p):
         rawind,ut1_unix = oldspool(path, p.xy, p.bin, p.kineticsec, p.startutc, p.outfn)
         vid2h5(None, ut1_unix, rawind, p.outfn, P)
     else:
-        raise ValueError('Not sure what to do with your specified options')
+        logging.critical(f'Did not find an Index.h5 file to work with: {p}')
+        return
 
     print(f'wrote {p.outfn} in {time()-tic:.1f} sec.')
 
