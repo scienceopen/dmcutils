@@ -6,7 +6,7 @@ from configparser import ConfigParser
 from datetime import datetime
 from pytz import UTC
 import numpy as np
-from scipy.misc import bytescale,imsave
+from scipy.misc import imsave
 import h5py
 from pandas import Series,read_hdf
 try:
@@ -17,13 +17,12 @@ except ImportError:
 from histutils import setupimgh5
 from histutils.timedmc import frame2ut1
 
-
 DTYPE = np.uint16
 
 def findnewest(path):
     assert path, f'{path} is empty'
     path = Path(path).expanduser()
-    assert path.exists(),f'{path}: could not find'
+    assert path.exists(), f'{path}: could not find'
 #%% it's a file
     if path.is_file():
         return path
@@ -206,19 +205,11 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
             outfn = outfn.with_suffix('.h5')
 
     print(f'writing {outfn}')
-    F.to_hdf(outfn,'filetick',mode='w')
-    with h5py.File(outfn,'a',libver='latest') as f:
+    F.to_hdf(outfn, 'filetick', mode='w')
+    with h5py.File(outfn, 'a', libver='latest') as f:
         f['path'] = str(flist[0].parent)
 
     return F
-
-
-def mean16to8(I):
-    #%% take mean and scale images
-    fmean = I.mean(axis=0)
-    l,h = np.percentile(fmean,(0.5,99.5))
-#%% 16 bit to 8 bit using scikit-image
-    return bytescale(fmean,cmin=l,cmax=h)
 
 def annowrite(I,newfn,pngfn):
     pngfn = Path(pngfn).expanduser()
@@ -231,7 +222,7 @@ def annowrite(I,newfn,pngfn):
 #%% write to disk
         cv2.imwrite(str(pngfn),I) #if using color, remember opencv requires BGR color order
     else:
-        imsave(str(pngfn),I)
+        imsave(pngfn, I)
 # %%
 def oldspool(path, xy, bn, kineticsec, startutc, outfn):
     try:
@@ -286,18 +277,6 @@ def oldspool(path, xy, bn, kineticsec, startutc, outfn):
         eng.quit()
 
     rawind = np.arange(nfile)+1
-    ut1 = frame2ut1(startutc,kineticsec,rawind)
-
-    return rawind,ut1
-
-
-def h5toh5(fn,kineticsec,startutc):
-    fn = Path(fn).expanduser()
-
-    with h5py.File(str(fn),'r',libver='latest') as f:
-        data = f['/rawimg']
-
-        rawind = np.arange(data.shape[0])+1
     ut1 = frame2ut1(startutc,kineticsec,rawind)
 
     return rawind,ut1

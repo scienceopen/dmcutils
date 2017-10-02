@@ -28,7 +28,8 @@ from pandas import read_hdf
 import numpy as np
 #
 from histutils import vid2h5
-from dmcutils.neospool import oldspool,h5toh5, readNeoSpool,spoolparam
+from dmcutils import h5toh5, write_quota
+from dmcutils.neospool import oldspool, readNeoSpool,spoolparam
 
 W = 51  # keep +/-  W/2 frames around detection
 
@@ -62,7 +63,7 @@ def converter(p):
 # %% 2. select which file to convert...automatically
             if p.detfn:
                 detfn = Path(p.detfn).expanduser()
-                with h5py.File(detfn,'r',libver='latest') as f:
+                with h5py.File(detfn, 'r', libver='latest') as f:
                     det = f['/detect'][:]
 
                 upfact = flist.shape[0] // det.size
@@ -80,9 +81,9 @@ def converter(p):
                 assert abs(len(flist) - det2.size) <= 20,f'{detfn} and {path} are maybe not for the same spool data file directory'
                 det = det2
 
-                Lkeep = np.ones(min(len(flist),W),dtype=int)  # keeps Lkeep/2 files each side of first/last detection.
+                Lkeep = np.ones(min(len(flist), W), dtype=int)  # keeps Lkeep/2 files each side of first/last detection.
 
-                ikeep = np.convolve(det,Lkeep,'same').astype(bool)
+                ikeep = np.convolve(det, Lkeep, 'same').astype(bool)
                 det = det[ikeep]
 
                 assert len(det) == ikeep.sum(),f'len(det): {len(det)}  ikeep.sum(): {ikeep.sum()}'
@@ -92,14 +93,18 @@ def converter(p):
                 det = np.ones(flist.shape[0],dtype=bool)
                 ikeep = slice(None)
 # %% 3.
-            Fparam = spoolparam(spoolini,
-                                p.xy[0]//p.bin[0], p.xy[1]//p.bin[1], p.stride)
-            P = {**P,**Fparam}
+            finf = spoolparam(spoolini, p.xy[0]//p.bin[0], p.xy[1]//p.bin[1], p.stride)
+            P = {**P,**finf}
 
             flist2 = flist[ikeep]
             print(f'keeping/converting {flist2.shape[0]} out of {flist.shape[0]} files in {path}')
-
-            # append to HDF5 one spool file at a time to conserve RAM
+            if len(flist2) == 0:
+                return
+            """
+            append to HDF5 one spool file at a time to conserve RAM
+            """
+            # assuming all spool files are the same size
+            write_quota((path.parent/flist2.iloc[0]).stat().st_size * len(flist2), p.outfn)
             for i,fn in enumerate(flist2):
                 fn = Path(path.parent/fn)
                 P['spoolfn'] = fn

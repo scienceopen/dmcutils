@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 from pathlib import Path
 from scipy.ndimage import imread
-from dmcutils.neospool import findnewest,readNeoSpool,mean16to8,annowrite,spoolparam
+#
+from dmcutils import mean16to8
+from dmcutils.neospool import findnewest,readNeoSpool,annowrite,spoolparam
 
 INIFN = 'acquisitionmetadata.ini'
 
@@ -21,11 +23,11 @@ if __name__ == '__main__':
         newfn = findnewest(root)
 #%% read images and FPGA tick clock from this file
         P = spoolparam(newfn.parent/INIFN)
-        frames,ticks = readNeoSpool(newfn,P)
+        frames,ticks = readNeoSpool(newfn, P)
 #%% 16 bit to 8 bit, mean of image stack for this file
         f8bit = mean16to8(frames)
     else:
         raise ValueError(f'unknown image file/location {root}')
 
 #%% put time on image and write to disk
-    annowrite(f8bit,newfn,p.outpath)
+    annowrite(f8bit, newfn, p.outpath)
