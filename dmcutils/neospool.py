@@ -178,12 +178,29 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
     """
     sorts filenames into FPGA tick order so that you can read video in time order
     """
+# %% input checking
     assert isinstance(P, dict)
 
+    if not isinstance(outfn,(str,Path)):
+        raise RuntimeError('No output filename specified, aborting tick writing.')
+        return
+
+    outfn = Path(outfn).expanduser()
+
+    if outfn.is_dir():
+        raise RuntimeError('specify a filename to write, not just the directory.')
+
+    if outfn.is_file() and outfn.suffix != '.h5':
+        outfn = outfn.with_suffix('.h5')
+    # yes check a second time
+    if outfn.is_file():
+        logging.error('Output tick filename already exists, aborting.')
+        return
+# %% sort indices
     print('ordering randomly named spool files vs. time (ticks)')
 
     tic = time()
-    ticks = np.empty(len(flist), dtype='int64')  # must be int64, not int for Windows in general.
+    ticks = np.empty(len(flist), dtype=np.int64)  # must be int64, not int for Windows in general.
     for i,f in enumerate(flist):
         ticks[i]  = readNeoSpool(f,P,0,True,zerocol)
         if not i % 100:
@@ -193,23 +210,14 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
     F.sort_index(inplace=True)
     print(f'sorted {len(flist)} files vs. time ticks in {time()-tic:.1f} seconds')
 
-    if not outfn:
-        outfn = flist[0].parent
-
-    outfn = Path(outfn).expanduser()
-    if outfn.is_dir():
-        outfn = outfn/'index.h5'
-
-    if outfn.is_file():
-        if outfn.suffix != '.h5':
-            outfn = outfn.with_suffix('.h5')
-
+# %% writing HDF5 index
     print(f'writing {outfn}')
     F.to_hdf(outfn, 'filetick', mode='w')
     with h5py.File(outfn, 'a', libver='latest') as f:
         f['path'] = str(flist[0].parent)
 
     return F
+
 
 def annowrite(I,newfn,pngfn):
     pngfn = Path(pngfn).expanduser()
