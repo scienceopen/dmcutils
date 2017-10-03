@@ -10,7 +10,6 @@ I don't think filename are monotonic w.r.t. ticks.
 python FileTick.py z:\2017-04-27\spool
 """
 from pathlib import Path
-import logging
 from dmcutils.neospool import spoolparam,tickfile,spoolpath
 
 INIFN = 'acquisitionmetadata.ini' # autogen from Solis
@@ -19,8 +18,7 @@ def filetick(indir:Path, xy:tuple, stride:int, tickfn:Path, zerocols:int):
 
     flist = spoolpath(indir)
     if len(flist)==0:
-        logging.error(f'no files found in {p.path}')
-        return
+        raise FileNotFoundError(f'no files found in {p.path}')
 
     P = spoolparam(flist[0].parent/INIFN, xy[0], xy[1], stride)
     F = tickfile(flist, P, tickfn, zerocols)

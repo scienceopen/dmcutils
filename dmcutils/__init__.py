@@ -14,7 +14,7 @@ def write_quota(outbytes, outfn:Path):
     if outfn:
         freeout = shutil.disk_usage(outfn.parent).free
         if freeout < 10*outbytes:
-            raise RuntimeError(f'out of disk space on {outfn.parent}.  {freeout/1e9} GB free, wanting to write {outsize/1e9} GB.')
+            raise RuntimeError(f'out of disk space on {outfn.parent}.  {freeout/1e9} GB free, wanting to write {outbytes/1e9} GB.')
 
 
 def h5toh5(fn,kineticsec,startutc):

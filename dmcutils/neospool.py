@@ -194,8 +194,7 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
         outfn = outfn.with_suffix('.h5')
     # yes check a second time
     if outfn.is_file():
-        logging.error('Output tick filename already exists, aborting.')
-        return
+        raise IOError(f'Output tick {outfn} already exists, aborting.')
 # %% sort indices
     print('ordering randomly named spool files vs. time (ticks)')
 
