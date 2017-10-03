@@ -19,22 +19,24 @@ from histutils.timedmc import frame2ut1
 
 DTYPE = np.uint16
 
-def findnewest(path):
+def findnewest(path:Path):
     assert path, f'{path} is empty'
     path = Path(path).expanduser()
-    assert path.exists(), f'{path}: could not find'
+    if not path.exists():
+        raise FileNotFoundError(f'{path}: could not find')
 #%% it's a file
     if path.is_file():
         return path
 #%% it's a directory
     flist = path.glob('*.dat')
-    assert flist, f'no files found in {path}'
+    if not flist:
+        raise FileNotFoundError(f'no files found in {path}')
 
     # max(fl2,key=getmtime)                             # 9.2us per loop, 8.1 time cache Py3.5,  # 6.2us per loop, 18 times cache  Py27
     #max((str(f) for f in flist), key=getmtime)         # 13us per loop, 20 times cache, # 10.1us per loop, no cache Py27
     return max(flist, key=lambda f: f.stat().st_mtime) #14.8us per loop, 7.5times cache, # 10.3us per loop, 21 times cache Py27
 
-def spoolpath(path):
+def spoolpath(path:Path):
     path = Path(path).expanduser()
 
     if path.is_dir():
@@ -101,7 +103,8 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False, zerocols=0):
     for 2012-present Neo/Zyla sCMOS Andor Solis spool files.
     reads a SINGLE spool file and returns the image frames & FPGA ticks
     """
-    assert fn.suffix == '.dat',f'you need to pass a spool file, you passed {fn}'
+    if not fn.suffix == '.dat':
+        raise ValueError(f'Need a spool file, which {fn} is not.')
     #%% parse header
 
     nx, ny= P['superx'], P['supery']
@@ -121,11 +124,11 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False, zerocols=0):
     npixframe = (nx+zerocols)*ny
 #%% check size of spool file
     if not P['framebytes'] == (npixframe * P['bpp']//8) + P['stride']:
-        raise IOError('file may be read incorrectly--wrong framebytes')
+        raise IOError(f'{fn} may be read incorrectly--wrong framebytes')
 
     filebytes = fn.stat().st_size
     if P['nframefile'] != filebytes // P['framebytes']:
-        raise IOError('file may be read incorrectly -- wrong # of frames/file')
+        raise IOError(f'{fn} may be read incorrectly -- wrong # of frames/file')
 # %% tick only jump
     if tickonly:
         with fn.open('rb') as f:
@@ -182,13 +185,12 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
     assert isinstance(P, dict)
 
     if not isinstance(outfn,(str,Path)):
-        raise RuntimeError('No output filename specified, aborting tick writing.')
-        return
+        raise ValueError('No output filename specified, aborting tick writing.')
 
     outfn = Path(outfn).expanduser()
 
     if outfn.is_dir():
-        raise RuntimeError('specify a filename to write, not just the directory.')
+        raise ValueError('specify a filename to write, not just the directory.')
 
     if outfn.is_file() and outfn.suffix != '.h5':
         outfn = outfn.with_suffix('.h5')
@@ -203,7 +205,7 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
     for i,f in enumerate(flist):
         ticks[i]  = readNeoSpool(f,P,0,True,zerocol)
         if not i % 100:
-            print(f'{i/len(flist)*100:.1f} %')
+            print(f'\r{i/len(flist)*100:.1f} %',end="")
 
     F = Series(index=ticks,data=[f.name for f in flist])
     F.sort_index(inplace=True)
@@ -231,7 +233,10 @@ def annowrite(I,newfn,pngfn):
     else:
         imsave(pngfn, I)
 # %%
-def oldspool(path, xy, bn, kineticsec, startutc, outfn):
+def oldspool(path, xy, bn, kineticsec, startutc, outfn:Path):
+    """
+    Matlab Engine import can screw up sometimes, better to import only when truly needed.
+    """
     try:
         import matlab.engine
     except ImportError:
