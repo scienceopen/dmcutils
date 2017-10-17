@@ -41,6 +41,9 @@ def converter(p):
              }
 
     path = Path(p.path).expanduser()
+    outfn = Path(p.outfn).expanduser()
+    if outfn.is_file():
+        raise IOError(f'extracted file {outfn} already exists')
 
     if path.is_file() and path.suffix == '.h5' :
         with h5py.File(path, 'r') as f:
@@ -104,23 +107,23 @@ def converter(p):
             append to HDF5 one spool file at a time to conserve RAM
             """
             # assuming all spool files are the same size
-            write_quota((path.parent/flist2.iloc[0]).stat().st_size * len(flist2), p.outfn)
+            write_quota((path.parent/flist2.iloc[0]).stat().st_size * len(flist2), outfn)
             for i,fn in enumerate(flist2):
                 fn = Path(path.parent/fn)
                 P['spoolfn'] = fn
                 imgs, ticks, tsec = readNeoSpool(fn, P, zerocols=p.zerocols)
-                vid2h5(imgs, None, None, ticks, p.outfn, P, argv, i, len(flist2), det, tstart)
+                vid2h5(imgs, None, None, ticks, outfn, P, argv, i, len(flist2), det, tstart)
         else:
             print('writing metadata')
             rawind,ut1_unix = h5toh5(path, p.kineticsec, p.startutc)
-            vid2h5(None, ut1_unix, rawind, p.outfn, P)
+            vid2h5(None, ut1_unix, rawind, outfn, P)
     elif p.broken:  # ancient spool file < 2011
-        rawind,ut1_unix = oldspool(path, p.xy, p.bin, p.kineticsec, p.startutc, p.outfn)
-        vid2h5(None, ut1_unix, rawind, p.outfn, P)
+        rawind,ut1_unix = oldspool(path, p.xy, p.bin, p.kineticsec, p.startutc, outfn)
+        vid2h5(None, ut1_unix, rawind, outfn, P)
     else:
         raise FileNotFoundError(f'Did not find an Index file to work with: {p}')
 
-    print(f'wrote {p.outfn} in {time()-tic:.1f} sec.')
+    print(f'wrote {outfn} in {time()-tic:.1f} sec.')
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
