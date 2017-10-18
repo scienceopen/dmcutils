@@ -20,6 +20,7 @@ def write_quota(outbytes, outfn:Path):
             odir = outfn
         else:
             logging.error(f'{outfn} is not in a known directory')
+            return
 
         freeout = shutil.disk_usage(odir).free
         if freeout < 10*outbytes:
