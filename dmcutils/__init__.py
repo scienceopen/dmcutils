@@ -1,4 +1,5 @@
 from pathlib import Path
+import logging
 import shutil
 import h5py
 import numpy as np
@@ -18,7 +19,7 @@ def write_quota(outbytes, outfn:Path):
         elif outfn.is_dir():
             odir = outfn
         else:
-            raise FileNotFoundError(f'{outfn} is not in a known directory')
+            logging.error(f'{outfn} is not in a known directory')
 
         freeout = shutil.disk_usage(odir).free
         if freeout < 10*outbytes:
