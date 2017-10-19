@@ -30,7 +30,8 @@ def preview_image_web(datadir:Path, htmldir:Path):
 
     servlog = serverlogfn.open('a')
 # %% detect if server already running, if not, start it
-    subprocess.Popen(['nice','-n','15','python','Webserver.py','8088', str(htmldir)],
+    # 'nice','-n','15',
+    subprocess.Popen(['python','Webserver.py','8088', str(htmldir)],
                      stderr=servlog)
 
 # %% every N seconds (600=10 minutes) update the preview
@@ -41,7 +42,8 @@ def preview_image_web(datadir:Path, htmldir:Path):
     previewlog = previewlogfn.open('a')
 
     while True:
-        subprocess.run(['nice','-n','19','python','-u','live_preview_neospool.py', str(datadir)],
+        # 'nice','-n','19',
+        subprocess.run(['python','-u','live_preview_neospool.py', str(datadir)],
                          stderr=previewlog)
         sleep(10)
 
