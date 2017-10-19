@@ -9,16 +9,16 @@ INIFN = 'acquisitionmetadata.ini'
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
-    p = ArgumentParser(description='find newest file in directory, take mean of images, convert to PNG for web live preview')
+    p = ArgumentParser(description='find newest file in directory, take mean of images, convert to JPG for web live preview')
     p.add_argument('path',help='path to search')
-    p.add_argument('-o','--outpath',help='path to write the live png image to',default='html/latest.png')
+    p.add_argument('-o','--outpath',help='path to write the live png image to',default='static/latest.jpg')
     p = p.parse_args()
 
     root = Path(p.path).expanduser()
 
     if (root/'image.bmp').is_file():
         f8bit = imread(root/'image.bmp') # TODO check for 8 bit
-    elif root.is_dir():
+    elif root.is_dir(): # spool case
 #%% find newest file to extract images from
         newfn = findnewest(root)
 #%% read images and FPGA tick clock from this file

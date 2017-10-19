@@ -21,7 +21,7 @@ limiter = Limiter(app,
 
 @app.route('/')
 def static_file():
-    return send_from_directory('static',
+    return send_from_directory(p.htmldir,
                                'latest.png',
                                as_attachment=False)
 
@@ -29,6 +29,7 @@ if __name__ == '__main__':
     from argparse import ArgumentParser
     p = ArgumentParser()
     p.add_argument('port',help='port number',type=int)
+    p.add_argument('htmldir',help='directory to serve files from')
     p = p.parse_args()
 
     try:

@@ -15,19 +15,22 @@ from time import sleep
 import sys
 import subprocess
 
-sys.tracebacklimit = 1
+sys.tracebacklimit = None
 
 serverlogfn = Path('~/server.log').expanduser()
 previewlogfn = Path('~/live.log').expanduser()
 
-def preview_image_web(htmldir:Path):
+def preview_image_web(datadir:Path, htmldir:Path):
+    datadir = Path(datadir).expanduser()
     htmldir = Path(htmldir).expanduser()
+    if not datadir.is_dir():
+        raise FileNotFoundError(f'{datadir} not found')
     if not htmldir.is_dir():
         raise FileNotFoundError(f'{htmldir} not found')
 
     servlog = serverlogfn.open('a')
 # %% detect if server already running, if not, start it
-    subprocess.Popen(['nice','-n','15','python','Webserver.py','8088'],
+    subprocess.Popen(['nice','-n','15','python','Webserver.py','8088', str(htmldir)],
                      stderr=servlog)
 
 # %% every N seconds (600=10 minutes) update the preview
@@ -38,16 +41,17 @@ def preview_image_web(htmldir:Path):
     previewlog = previewlogfn.open('a')
 
     while True:
-        subprocess.run(['nice','-n','19','python','-u','live_preview_neospool.py',
-                          str(htmldir)],
+        subprocess.run(['nice','-n','19','python','-u','live_preview_neospool.py', str(datadir)],
                          stderr=previewlog)
         sleep(10)
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
     p = ArgumentParser()
-    p.add_argument('htmldir',help='directory to serve preview image from')
+    p.add_argument('datadir',help='directory to read preview data from')
+    p.add_argument('--htmldir',help='directory to serve preview image from',
+                    default='static/')
     p = p.parse_args()
 
-    preview_image_web(p.htmldir)
+    preview_image_web(p.datadir,p.htmldir)
 
