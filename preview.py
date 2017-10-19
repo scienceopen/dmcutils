@@ -15,7 +15,7 @@ from time import sleep
 import sys
 import subprocess
 
-sys.tracebacklimit = 2
+sys.tracebacklimit = 5
 
 serverlogfn = Path('~/server.log').expanduser()
 previewlogfn = Path('~/live.log').expanduser()
