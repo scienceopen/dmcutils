@@ -6,7 +6,7 @@ http://localhost/latest.jpg
 and put latest.jpg under dmcutils/static/
 """
 import sys
-sys.tracebacklimit=None
+sys.tracebacklimit=2
 import socket
 #
 from flask import Flask, send_from_directory
@@ -16,7 +16,8 @@ from flask_limiter.util import get_remote_address
 #%%
 app = Flask(__name__,static_url_path='')
 limiter = Limiter(app,
-                  default_limits=["10/minute","1/second"],
+                  #default_limits=["10/minute","1/second"],
+                  global_limits=["10/minute","1/second"],
                   key_func=get_remote_address)
 
 @app.route('/')
