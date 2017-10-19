@@ -23,7 +23,7 @@ if __name__ == '__main__':
         newfn = findnewest(root)
 #%% read images and FPGA tick clock from this file
         P = spoolparam(newfn.parent/INIFN)
-        frames,ticks = readNeoSpool(newfn, P)
+        frames,ticks,tsec = readNeoSpool(newfn, P)
 #%% 16 bit to 8 bit, mean of image stack for this file
         f8bit = mean16to8(frames)
     else:
