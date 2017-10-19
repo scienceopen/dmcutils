@@ -5,17 +5,19 @@ http://localhost/latest.jpg
 
 and put latest.jpg under dmcutils/static/
 """
+import sys
+sys.tracebacklimit=None
 import socket
-from sys import stderr
 #
 from flask import Flask, send_from_directory
-import flask_limiter
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 #%%
 app = Flask(__name__,static_url_path='')
-limiter = flask_limiter.Limiter(app,
-                global_limits=["10/minute","1/second"],)
-               # key_func=flask_limiter.util.get_ipaddr())
+limiter = Limiter(app,
+                  default_limits=["10/minute","1/second"],
+                  key_func=get_remote_address)
 
 @app.route('/')
 def static_file():
@@ -32,4 +34,4 @@ if __name__ == '__main__':
     try:
         app.run(host='0.0.0.0',port=p.port)
     except socket.error as e:
-        print(f'server may be already running  {e}',file=stderr)
+        raise RuntimeError(f'server may be already running  {e}')
