@@ -28,7 +28,7 @@ def findnewest(path:Path):
     if path.is_file():
         return path
 #%% it's a directory
-    flist = path.glob('*.dat')
+    flist = sorted(path.glob('*.dat'))
     if not flist:
         raise FileNotFoundError(f'no files found in {path}')
 
