@@ -6,6 +6,7 @@ from configparser import ConfigParser
 from datetime import datetime
 from pytz import UTC
 import numpy as np
+from scipy.ndimage import imread
 from scipy.misc import imsave
 import h5py
 from pandas import Series,read_hdf
@@ -14,12 +15,35 @@ try:
 except ImportError:
     cv2=None  #fall back to scipy imsave, no time annotation
 #
+from . import mean16to8
 from histutils import setupimgh5
 from histutils.timedmc import frame2ut1
 
 DTYPE = np.uint16
 
-def findnewest(path:Path, verbose:bool=False):
+def preview_newest(path:Path, odir:Path, oldfset:set=None, inifn:str='acquisitionmetadata.ini', verbose:bool=False):
+    root = Path(path).expanduser()
+
+    if (root/'image.bmp').is_file():
+        f8bit = imread(root/'image.bmp') # TODO check for 8 bit
+    elif root.is_dir(): # spool case
+#%% find newest file to extract images from
+        newfn,oldfset = findnewest(root, oldfset, verbose)
+#%% read images and FPGA tick clock from this file
+        P = spoolparam(newfn.parent / inifn)
+        frames,ticks,tsec = readNeoSpool(newfn, P)
+#%% 16 bit to 8 bit, mean of image stack for this file
+        f8bit = mean16to8(frames)
+    else:
+        raise ValueError(f'unknown image file/location {root}')
+
+#%% put time on image and write to disk
+    annowrite(f8bit, newfn, odir)
+
+    return oldfset
+
+
+def findnewest(path:Path, oldset:set=None, verbose:bool=False):
     assert path, f'{path} is empty'
     path = Path(path).expanduser()
     if not path.exists():
@@ -28,21 +52,24 @@ def findnewest(path:Path, verbose:bool=False):
     if path.is_file():
         return path
 #%% it's a directory
-    flist = list(path.glob('*.dat'))
-    if not flist:
+    newset = set(path.glob('*.dat'))
+
+    fset = newset.symmetric_difference(oldset) if oldset is not None else newset
+
+    if not fset:
         raise FileNotFoundError(f'no files found in {path}')
 
     if verbose:
-        print(f'found {len(flist)} files in {path}\r',end="")
+        print(f'found {len(fset)} new files in {path}')
 
     # max(fl2,key=getmtime)                             # 9.2us per loop, 8.1 time cache Py3.5,  # 6.2us per loop, 18 times cache  Py27
     #max((str(f) for f in flist), key=getmtime)         # 13us per loop, 20 times cache, # 10.1us per loop, no cache Py27
-    newest =  max(flist, key=lambda f: f.stat().st_mtime) #14.8us per loop, 7.5times cache, # 10.3us per loop, 21 times cache Py27
+    newest =  max(fset, key=lambda f: f.stat().st_mtime) #14.8us per loop, 7.5times cache, # 10.3us per loop, 21 times cache Py27
 
     if verbose:
         print(f'newest file {newest}  {newest.stat().st_mtime}')
 
-    return newest
+    return newest,newset
 
 def spoolpath(path:Path):
     path = Path(path).expanduser()

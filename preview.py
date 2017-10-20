@@ -14,13 +14,15 @@ from pathlib import Path
 from time import sleep
 import sys
 import subprocess
-
+#
+from dmcutils.neospool import preview_newest
+#
 sys.tracebacklimit = 5
 
 serverlogfn = Path('~/server.log').expanduser()
 previewlogfn = Path('~/live.log').expanduser()
 
-def preview_image_web(datadir:Path, htmldir:Path):
+def preview_image_web(datadir:Path, htmldir:Path, verbose:bool):
     datadir = Path(datadir).expanduser()
     htmldir = Path(htmldir).expanduser()
     if not datadir.is_dir():
@@ -34,18 +36,13 @@ def preview_image_web(datadir:Path, htmldir:Path):
     subprocess.Popen(['python','Webserver.py','8088', str(htmldir)],
                      stderr=servlog)
 
-# %% every N seconds (600=10 minutes) update the preview
-    """
-    Note because of non-sequential file naming, this takes a few minutes each time,
-     proportional to the rapidly increasing number of spool files...
-    """
-    previewlog = previewlogfn.open('a')
+# %% every N seconds update the preview
+    ofn = htmldir/'latest.jpg'
+    oldfset = set()
 
     while True:
-        # 'nice','-n','19',
-        subprocess.run(['python','live_preview_neospool.py', str(datadir), '-v'],
-                         stderr=previewlog)
-        sleep(10)
+        oldfset = preview_newest(datadir, ofn, oldfset, verbose=verbose)
+        sleep(30)
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
@@ -53,8 +50,8 @@ if __name__ == '__main__':
     p.add_argument('datadir',help='directory to read preview data from')
     p.add_argument('--htmldir',help='directory to serve preview image from',
                     default='static/')
-
+    p.add_argument('-v','--verbose',action='store_true')
     p = p.parse_args()
 
-    preview_image_web(p.datadir,p.htmldir)
+    preview_image_web(p.datadir, p.htmldir, p.verbose)
 
