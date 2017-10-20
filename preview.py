@@ -53,6 +53,7 @@ if __name__ == '__main__':
     p.add_argument('datadir',help='directory to read preview data from')
     p.add_argument('--htmldir',help='directory to serve preview image from',
                     default='static/')
+
     p = p.parse_args()
 
     preview_image_web(p.datadir,p.htmldir)

@@ -19,7 +19,7 @@ from histutils.timedmc import frame2ut1
 
 DTYPE = np.uint16
 
-def findnewest(path:Path):
+def findnewest(path:Path, verbose:bool=False):
     assert path, f'{path} is empty'
     path = Path(path).expanduser()
     if not path.exists():
@@ -28,13 +28,18 @@ def findnewest(path:Path):
     if path.is_file():
         return path
 #%% it's a directory
-    flist = sorted(path.glob('*.dat'))
+    flist = list(path.glob('*.dat'))
     if not flist:
         raise FileNotFoundError(f'no files found in {path}')
 
     # max(fl2,key=getmtime)                             # 9.2us per loop, 8.1 time cache Py3.5,  # 6.2us per loop, 18 times cache  Py27
     #max((str(f) for f in flist), key=getmtime)         # 13us per loop, 20 times cache, # 10.1us per loop, no cache Py27
-    return max(flist, key=lambda f: f.stat().st_mtime) #14.8us per loop, 7.5times cache, # 10.3us per loop, 21 times cache Py27
+    newest =  max(flist, key=lambda f: f.stat().st_mtime) #14.8us per loop, 7.5times cache, # 10.3us per loop, 21 times cache Py27
+
+    if verbose:
+        print(f'newest file {newest}  {newest.stat().st_mtime}')
+
+    return newest
 
 def spoolpath(path:Path):
     path = Path(path).expanduser()
@@ -220,14 +225,18 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
     return F
 
 
-def annowrite(I,newfn,pngfn):
+def annowrite(I, newfn:Path, pngfn:Path):
     pngfn = Path(pngfn).expanduser()
     pngfn.parent.mkdir(parents=True,exist_ok=True)
 
     if cv2:
-        cv2.putText(I, text=datetime.fromtimestamp(newfn.stat().st_mtime,tz=UTC).strftime('%x %X'), org=(3,35),
-            fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.1,
-            color=(255,255,255), thickness=2)
+        cv2.putText(I,
+                    text=datetime.fromtimestamp(newfn.stat().st_mtime,tz=UTC).strftime('%x %X'),
+                    org=(3,35),
+                    fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                    fontScale=1.1,
+                    color=(255,255,255),
+                    thickness=2)
 #%% write to disk
         cv2.imwrite(str(pngfn),I) #if using color, remember opencv requires BGR color order
     else:

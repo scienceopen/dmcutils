@@ -12,6 +12,7 @@ if __name__ == '__main__':
     p = ArgumentParser(description='find newest file in directory, take mean of images, convert to JPG for web live preview')
     p.add_argument('path',help='path to search')
     p.add_argument('-o','--outpath',help='path to write the live png image to',default='static/latest.jpg')
+    p.add_argument('-v','--verbose',action='store_true')
     p = p.parse_args()
 
     root = Path(p.path).expanduser()
@@ -20,7 +21,7 @@ if __name__ == '__main__':
         f8bit = imread(root/'image.bmp') # TODO check for 8 bit
     elif root.is_dir(): # spool case
 #%% find newest file to extract images from
-        newfn = findnewest(root)
+        newfn = findnewest(root, p.verbose)
 #%% read images and FPGA tick clock from this file
         P = spoolparam(newfn.parent/INIFN)
         frames,ticks,tsec = readNeoSpool(newfn, P)
