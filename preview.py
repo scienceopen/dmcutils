@@ -20,7 +20,6 @@ from dmcutils.neospool import preview_newest
 sys.tracebacklimit = 5
 
 serverlogfn = Path('~/server.log').expanduser()
-previewlogfn = Path('~/live.log').expanduser()
 
 def preview_image_web(datadir:Path, htmldir:Path, verbose:bool):
     datadir = Path(datadir).expanduser()
