@@ -32,6 +32,9 @@ def findnewest(path:Path, verbose:bool=False):
     if not flist:
         raise FileNotFoundError(f'no files found in {path}')
 
+    if verbose:
+        print(f'found {len(flist)} files in {path}\r',end="")
+
     # max(fl2,key=getmtime)                             # 9.2us per loop, 8.1 time cache Py3.5,  # 6.2us per loop, 18 times cache  Py27
     #max((str(f) for f in flist), key=getmtime)         # 13us per loop, 20 times cache, # 10.1us per loop, no cache Py27
     newest =  max(flist, key=lambda f: f.stat().st_mtime) #14.8us per loop, 7.5times cache, # 10.3us per loop, 21 times cache Py27
