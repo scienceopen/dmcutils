@@ -53,11 +53,10 @@ def findnewest(path:Path, oldset:set=None, verbose:bool=False):
         return path
 #%% it's a directory
     newset = set(path.glob('*.dat'))
+    if not newset:
+        raise FileNotFoundError(f'no files found in {path}')
 
     fset = newset.symmetric_difference(oldset) if oldset is not None else newset
-
-    if not fset:
-        raise FileNotFoundError(f'no files found in {path}')
 
     if verbose:
         print(f'found {len(fset)} new files in {path}')
