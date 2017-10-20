@@ -43,7 +43,7 @@ def preview_image_web(datadir:Path, htmldir:Path):
 
     while True:
         # 'nice','-n','19',
-        subprocess.run(['python','-u','live_preview_neospool.py', str(datadir)],
+        subprocess.run(['python','live_preview_neospool.py', str(datadir), '-v'],
                          stderr=previewlog)
         sleep(10)
 
