@@ -1,14 +1,19 @@
 #!/usr/bin/env python
 """
-UNTESTED NOT YET WORKING
-
-simple web server with polling of latest image for Andor Neo Spool Files
+Web server polling latest image (averaged over spool file) for Andor Neo Spool Files
 uses OpenCV 3 with Python 3.6
 Michael Hirsch
 
 Prereqs: pip install flask flask-limiter
 
-./preview.py ~/datadir
+Linux:
+nice -n 19 python preview.py ~/datadir
+
+Windows:
+start /low python preview.py d:\datadir
+
+Note that subprocesses have priority of calling function, so we don't need "nice"
+in the Popen command.
 """
 from pathlib import Path
 from time import sleep
@@ -21,7 +26,7 @@ sys.tracebacklimit = 5
 
 serverlogfn = Path('~/server.log').expanduser()
 
-def preview_image_web(datadir:Path, htmldir:Path, verbose:bool):
+def preview_image_web(datadir:Path, htmldir:Path, update:int, verbose:bool):
     datadir = Path(datadir).expanduser()
     htmldir = Path(htmldir).expanduser()
     if not datadir.is_dir():
@@ -31,26 +36,25 @@ def preview_image_web(datadir:Path, htmldir:Path, verbose:bool):
 
     servlog = serverlogfn.open('a')
 # %% detect if server already running, if not, start it
-    # 'nice','-n','15',
     subprocess.Popen(['python','Webserver.py','8088', str(htmldir)],
                      stderr=servlog)
-
 # %% every N seconds update the preview
     ofn = htmldir/'latest.jpg'
     oldfset = set()
 
     while True:
         oldfset = preview_newest(datadir, ofn, oldfset, verbose=verbose)
-        sleep(30)
+        sleep(update)
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
     p = ArgumentParser()
     p.add_argument('datadir',help='directory to read preview data from')
+    p.add_argument('--update',help='update rate [sec]',type=int,default=30)
     p.add_argument('--htmldir',help='directory to serve preview image from',
                     default='static/')
     p.add_argument('-v','--verbose',action='store_true')
     p = p.parse_args()
 
-    preview_image_web(p.datadir, p.htmldir, p.verbose)
+    preview_image_web(p.datadir, p.htmldir, p.update, p.verbose)
 

@@ -1,30 +1,9 @@
 from pathlib import Path
-import logging
-import shutil
 import h5py
 import numpy as np
 from scipy.misc import bytescale
 #
 from histutils.timedmc import frame2ut1
-
-def write_quota(outbytes, outfn:Path):
-    """
-    aborts writing if not enough space on drive to write
-    """
-
-    if outfn:
-        outfn = Path(outfn).expanduser()
-        if outfn.is_file():
-            odir = outfn.parent
-        elif outfn.is_dir():
-            odir = outfn
-        else:
-            logging.error(f'{outfn} is not in a known directory')
-            return
-
-        freeout = shutil.disk_usage(odir).free
-        if freeout < 10*outbytes:
-            raise IOError(f'out of disk space on {outfn.parent}.  {freeout/1e9} GB free, wanting to write {outbytes/1e9} GB.')
 
 
 def h5toh5(fn,kineticsec,startutc):
@@ -44,8 +23,18 @@ def h5toh5(fn,kineticsec,startutc):
 
 
 def mean16to8(I):
-#%% take mean and scale images
+    """
+    input:
+    I: uint16 ndarray image
+
+    output:
+    uint8 ndarray
+
+    1. take mean of uint16 image stack
+    2. clip off extrema (very dim or bright)
+    3. return uint8 image
+    """
     fmean = I.mean(axis=0)
     l,h = np.percentile(fmean, (0.5,99.5))
-#%% 16 bit to 8 bit using scikit-image
+# %% 16 bit to 8 bit using scikit-image
     return bytescale(fmean, cmin=l, cmax=h)

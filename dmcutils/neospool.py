@@ -29,6 +29,8 @@ def preview_newest(path:Path, odir:Path, oldfset:set=None, inifn:str='acquisitio
     elif root.is_dir(): # spool case
 #%% find newest file to extract images from
         newfn,oldfset = findnewest(root, oldfset, verbose)
+        if newfn is None:
+            return oldfset
 #%% read images and FPGA tick clock from this file
         P = spoolparam(newfn.parent / inifn)
         frames,ticks,tsec = readNeoSpool(newfn, P)
@@ -57,6 +59,9 @@ def findnewest(path:Path, oldset:set=None, verbose:bool=False):
         raise FileNotFoundError(f'no files found in {path}')
 
     fset = newset.symmetric_difference(oldset) if oldset is not None else newset
+    if not fset:
+        logging.warning(f'no new files found in {path}')
+        return None, set()
 
     if verbose:
         print(f'found {len(fset)} new files in {path}')
@@ -132,10 +137,22 @@ def spoolparam(inifn:Path, superx:int=None, supery:int=None, stride:int=None) ->
 
     return P
 
-def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False, zerocols=0):
+def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False, zerocols:int=0):
     """
     for 2012-present Neo/Zyla sCMOS Andor Solis spool files.
     reads a SINGLE spool file and returns the image frames & FPGA ticks
+
+    inputs:
+    fn: path to specific Neo spool file .dat
+    P: dict of camera data parameters
+    ifrm: None (read all .dat frames), int (read single frame),  list/tuple/range/ndarray (read subset of frames)
+    tickonly: for speed, only read tick (used heavily to create master time index)
+    zerocols: some spool formats had whole columns of zeros
+
+    output:
+    imgs: Nimg,x,y 3-D ndarray image stack
+    ticks: raw FPGA tick indices of "imgs"
+    tsec: elapsed time of frames start (sec)
     """
     if not fn.suffix == '.dat':
         raise ValueError(f'Need a spool file, which {fn} is not.')
@@ -171,9 +188,9 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False, zerocols=0):
             return tick
 # %% read this spool file
     if ifrm is None:
-        ifrm = np.arange(P['nframefile'], dtype=np.int64)  # int64 required for Windows
-    else:
-        ifrm = np.asarray(ifrm, dtype=np.int64)
+        ifrm = range(P['nframefile'])
+    elif isinstance(ifrm,(int,np.int64)):
+        ifrm = [ifrm]
 
     imgs = np.empty((len(ifrm),ny,nx), dtype=dtype)
     ticks  = np.zeros(len(ifrm), dtype=np.uint64)
@@ -210,6 +227,7 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False, zerocols=0):
     ticks = ticks[:j]
 
     return imgs, ticks, tsec
+
 
 def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
     """
