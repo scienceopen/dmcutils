@@ -155,8 +155,7 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False, zerocols:int=0
     ticks: raw FPGA tick indices of "imgs"
     tsec: elapsed time of frames start (sec)
     """
-    if not fn.suffix == '.dat':
-        raise ValueError(f'Need a spool file, which {fn} is not.')
+    assert fn.suffix == '.dat', 'Need a spool file, you gave {fn}'
     #%% parse header
 
     nx, ny= P['superx'], P['supery']
