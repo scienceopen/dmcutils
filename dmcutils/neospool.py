@@ -239,7 +239,7 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
     assert isinstance(outfn,(str,Path))
 
     outfn = Path(outfn).expanduser()
-    assert outfn.is_dir(),'specify a filename to write, not just the directory.'
+    assert outfn.is_file(),'specify a filename to write, not just the directory.'
 
     if outfn.is_file() and outfn.suffix != '.h5':
         outfn = outfn.with_suffix('.h5')
