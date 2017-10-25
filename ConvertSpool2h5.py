@@ -20,7 +20,7 @@ or to convert all spool files without regard to detections
 """
 import logging
 from time import time
-from sys import argv
+import sys
 from dateutil.parser import parse
 from pathlib import Path
 import h5py
@@ -30,7 +30,8 @@ import numpy as np
 from histutils import vid2h5, write_quota
 from dmcutils import h5toh5
 from dmcutils.neospool import oldspool, readNeoSpool,spoolparam
-
+sys.tracebacklimit=1
+#
 W = 51  # keep +/-  W/2 frames around detection
 
 def converter(p):
@@ -112,7 +113,7 @@ def converter(p):
                 fn = Path(path.parent/fn)
                 P['spoolfn'] = fn
                 imgs, ticks, tsec = readNeoSpool(fn, P, zerocols=p.zerocols)
-                vid2h5(imgs, None, None, ticks, outfn, P, argv, i, len(flist2), det, tstart)
+                vid2h5(imgs, None, None, ticks, outfn, P, sys.argv, i, len(flist2), det, tstart)
         else:
             print('writing metadata')
             rawind,ut1_unix = h5toh5(path, p.kineticsec, p.startutc)
@@ -126,6 +127,9 @@ def converter(p):
     print(f'wrote {outfn} in {time()-tic:.1f} sec.')
 
 if __name__ == "__main__":
+    import signal
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
     from argparse import ArgumentParser
     p = ArgumentParser(description='Andor Neo Spool reader, plotter, converter')
     p.add_argument('path',help='path containing 12-bit Neo spool files in broken format (2008-spring 2011)')
