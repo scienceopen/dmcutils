@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from pathlib import Path
-from time import time
+from time import time,sleep
 import logging
 from configparser import ConfigParser
 from datetime import datetime
@@ -33,6 +33,7 @@ def preview_newest(path:Path, odir:Path, oldfset:set=None, inifn:str='acquisitio
             return oldfset
 #%% read images and FPGA tick clock from this file
         P = spoolparam(newfn.parent / inifn)
+        sleep(0.5) # to avoid reading newest file while it's still being written
         frames,ticks,tsec = readNeoSpool(newfn, P)
 #%% 16 bit to 8 bit, mean of image stack for this file
         f8bit = mean16to8(frames)
@@ -235,22 +236,18 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
     """
 # %% input checking
     assert isinstance(P, dict)
-
-    if not isinstance(outfn,(str,Path)):
-        raise ValueError('No output filename specified, aborting tick writing.')
+    assert isinstance(outfn,(str,Path))
 
     outfn = Path(outfn).expanduser()
-
-    if outfn.is_dir():
-        raise ValueError('specify a filename to write, not just the directory.')
+    assert outfn.is_dir(),'specify a filename to write, not just the directory.'
 
     if outfn.is_file() and outfn.suffix != '.h5':
         outfn = outfn.with_suffix('.h5')
     # yes check a second time
-    if outfn.is_file():
+    if outfn.is_file() and outfn.stat().st_size > 0:
         raise IOError(f'Output tick {outfn} already exists, aborting.')
 # %% sort indices
-    print('ordering randomly named spool files vs. time (ticks)')
+    logging.debug('ordering randomly named spool files vs. time (ticks)')
 
     tic = time()
     ticks = np.empty(len(flist), dtype=np.int64)  # must be int64, not int for Windows in general.
@@ -263,7 +260,7 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
     F.sort_index(inplace=True)
     print(f'sorted {len(flist)} files vs. time ticks in {time()-tic:.1f} seconds')
 
-# %% writing HDF5 index
+# %% writing HDF5 iprintndex
     print(f'writing {outfn}')
     F.to_hdf(outfn, 'filetick', mode='w')
     with h5py.File(outfn, 'a', libver='latest') as f:

@@ -50,7 +50,7 @@ if __name__ == '__main__':
     from argparse import ArgumentParser
     p = ArgumentParser()
     p.add_argument('datadir',help='directory to read preview data from')
-    p.add_argument('--update',help='update rate [sec]',type=int,default=30)
+    p.add_argument('--update',help='update rate [sec]',type=int,default=60)
     p.add_argument('--htmldir',help='directory to serve preview image from',
                     default='static/')
     p.add_argument('-v','--verbose',action='store_true')
