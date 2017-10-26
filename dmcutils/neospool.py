@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from pathlib import Path
+from tempfile import mkstemp
 from time import time,sleep
 import logging
 from configparser import ConfigParser
@@ -233,6 +234,12 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
     """
     sorts filenames into FPGA tick order so that you can read video in time order
     """
+    def _writeh5(F,outfn,flist):
+        print(f'writing {outfn}')
+        F.to_hdf(outfn, 'filetick', mode='w')
+        with h5py.File(outfn, 'a', libver='latest') as f:
+            f['path'] = str(flist[0].parent)
+            
 # %% input checking
     assert isinstance(P, dict)
     assert isinstance(outfn,(str,Path))
@@ -259,11 +266,13 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
     F.sort_index(inplace=True)
     print(f'sorted {len(flist)} files vs. time ticks in {time()-tic:.1f} seconds')
 
-# %% writing HDF5 iprintndex
-    print(f'writing {outfn}')
-    F.to_hdf(outfn, 'filetick', mode='w')
-    with h5py.File(outfn, 'a', libver='latest') as f:
-        f['path'] = str(flist[0].parent)
+# %% writing HDF5 index
+    try:
+        _writeh5(F,outfn,flist)
+    except (IOError,OSError) as e:
+        # use a unique filename in same directory
+        logging.error(e)
+        _writeh5(F,mkstemp('.h5','index',outfn.parent),flist)
 
     return F
 
