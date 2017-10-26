@@ -83,10 +83,11 @@ def spoolpath(path:Path):
         flist = sorted(path.glob('*.dat')) # list of spool files in this directory
     elif path.is_file():
         if path.suffix == '.h5': # tick file we wrote putting filename in time order
-            F = read_hdf(path,'filetick')
+            #F = read_hdf(path,'filetick')
             with h5py.File(path,'r',libver='latest') as f:
+                F = f['fn']
                 P = Path(f['path'].value)
-            flist = [P/f for f in F.values]
+            flist = [P/f for f in F]#.values]
         else:
             flist = [path]
     else:
@@ -261,8 +262,11 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
 
 # %% writing HDF5 iprintndex
     print(f'writing {outfn}')
-    F.to_hdf(outfn, 'filetick', mode='w')
-    with h5py.File(outfn, 'a', libver='latest') as f:
+    #  F.to_hdf(outfn, 'filetick', mode='w')
+    #with h5py.File(outfn, 'a', libver='latest') as f:
+    with h5py.File(outfn, 'w', libver='latest') as f:
+        f['index'] = F.index
+        f['fn'] = F.values
         f['path'] = str(flist[0].parent)
 
     return F

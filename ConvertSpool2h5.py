@@ -63,7 +63,9 @@ def converter(p):
                 tstart = parse(p.startutc).timestamp()
             assert isinstance(tstart,(float,int))
 # %% 1.
-            flist = read_hdf(path,'filetick')
+            with h5py.File(path,'r',libver='latest') as f:
+                flist = f['fn'][:]
+       #     flist = read_hdf(path,'filetick')
 # %% 2. select which file to convert...automatically
             if p.detfn:
                 detfn = Path(p.detfn).expanduser()
