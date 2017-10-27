@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from pathlib import Path
+from tempfile import mkstemp
 from time import time,sleep
 import logging
 from configparser import ConfigParser
@@ -85,7 +86,7 @@ def spoolpath(path:Path):
         if path.suffix == '.h5': # tick file we wrote putting filename in time order
             #F = read_hdf(path,'filetick')
             with h5py.File(path,'r',libver='latest') as f:
-                F = f['fn']
+                F = f['fn'][:]
                 P = Path(f['path'].value)
             flist = [P/f for f in F]#.values]
         else:
@@ -234,6 +235,15 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
     """
     sorts filenames into FPGA tick order so that you can read video in time order
     """
+    def _writeh5(F,outfn,flist):
+        print(f'writing {outfn}')
+        #F.to_hdf(outfn, 'filetick', mode='w')
+        #with h5py.File(outfn, 'a', libver='latest') as f:
+        #    f['path'] = str(flist[0].parent)
+        with h5py.File(outfn, 'w', libver='latest') as f:
+            f['index'] = F.index
+            f['fn'] = F.values
+            f['path'] = str(flist[0].parent)    
 # %% input checking
     assert isinstance(P, dict)
     assert isinstance(outfn,(str,Path))
@@ -260,14 +270,13 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
     F.sort_index(inplace=True)
     print(f'sorted {len(flist)} files vs. time ticks in {time()-tic:.1f} seconds')
 
-# %% writing HDF5 iprintndex
-    print(f'writing {outfn}')
-    #  F.to_hdf(outfn, 'filetick', mode='w')
-    #with h5py.File(outfn, 'a', libver='latest') as f:
-    with h5py.File(outfn, 'w', libver='latest') as f:
-        f['index'] = F.index
-        f['fn'] = F.values
-        f['path'] = str(flist[0].parent)
+# %% writing HDF5 index
+    try:
+        _writeh5(F,outfn,flist)
+    except (IOError,OSError) as e:
+        # use a unique filename in same directory
+        logging.error(e)
+        _writeh5(F,mkstemp('.h5','index',outfn.parent),flist)
 
     return F
 
