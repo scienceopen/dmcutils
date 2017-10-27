@@ -48,7 +48,8 @@ def converter(p):
 
     if path.is_file() and path.suffix == '.h5' :
         with h5py.File(path, 'r') as f:
-            tickfile = 'filetick' in f  # spool file index
+            #tickfile = 'filetick' in f  # spool file index
+            tickfile = 'ticks' in f
 
         if tickfile:
             """

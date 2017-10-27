@@ -10,7 +10,7 @@ import numpy as np
 from scipy.ndimage import imread
 from scipy.misc import imsave
 import h5py
-from pandas import Series,read_hdf
+import pandas
 try:
     import cv2
 except ImportError:
@@ -231,7 +231,7 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False, zerocols:int=0
     return imgs, ticks, tsec
 
 
-def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
+def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> pandas.Series:
     """
     sorts filenames into FPGA tick order so that you can read video in time order
     """
@@ -241,9 +241,9 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
         #with h5py.File(outfn, 'a', libver='latest') as f:
         #    f['path'] = str(flist[0].parent)
         with h5py.File(outfn, 'w', libver='latest') as f:
-            f['index'] = F.index
+            f['ticks'] = F.index
             f['fn'] = F.values
-            f['path'] = str(flist[0].parent)    
+            f['path'] = str(flist[0].parent)
 # %% input checking
     assert isinstance(P, dict)
     assert isinstance(outfn,(str,Path))
@@ -266,7 +266,7 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> Series:
         if not i % 100:
             print(f'\r{i/len(flist)*100:.1f} %',end="")
 
-    F = Series(index=ticks,data=[f.name for f in flist])
+    F = pandas.Series(index=ticks,data=[f.name for f in flist])
     F.sort_index(inplace=True)
     print(f'sorted {len(flist)} files vs. time ticks in {time()-tic:.1f} seconds')
 
