@@ -243,6 +243,7 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> pandas.Series:
         with h5py.File(outfn, 'w', libver='latest') as f:
             f['ticks'] = F.index
             f['path'] = str(flist[0].parent)
+            #http://docs.h5py.org/en/latest/strings.html
             f.create_dataset("fn", data=F.values,
                              dtype=h5py.special_dtype(vlen=bytes))
 # %% input checking
