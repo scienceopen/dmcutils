@@ -24,13 +24,13 @@ import sys
 from dateutil.parser import parse
 from pathlib import Path
 import h5py
-from pandas import read_hdf
+#from pandas import read_hdf
 import numpy as np
 #
 from histutils import vid2h5, write_quota
 from dmcutils import h5toh5
 from dmcutils.neospool import oldspool, readNeoSpool,spoolparam
-sys.tracebacklimit=1
+#sys.tracebacklimit=1
 #
 W = 51  # keep +/-  W/2 frames around detection
 
