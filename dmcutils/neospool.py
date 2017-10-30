@@ -242,8 +242,9 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> pandas.Series:
         #    f['path'] = str(flist[0].parent)
         with h5py.File(outfn, 'w', libver='latest') as f:
             f['ticks'] = F.index
-            f['fn'] = F.values
             f['path'] = str(flist[0].parent)
+            f.create_dataset("fn", data=F.values,
+                             dtype=h5py.special_dtype(vlen=bytes))
 # %% input checking
     assert isinstance(P, dict)
     assert isinstance(outfn,(str,Path))
@@ -255,7 +256,8 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> pandas.Series:
         outfn = outfn.with_suffix('.h5')
     # yes check a second time
     if outfn.is_file() and outfn.stat().st_size > 0:
-        raise IOError(f'Output tick {outfn} already exists, aborting.')
+        logging.warning(f'Output tick {outfn} already exists, aborting.')
+        return
 # %% sort indices
     logging.debug('ordering randomly named spool files vs. time (ticks)')
 
