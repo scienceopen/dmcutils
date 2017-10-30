@@ -103,7 +103,7 @@ def converter(p):
             finf = spoolparam(spoolini, p.xy[0]//p.bin[0], p.xy[1]//p.bin[1], p.stride)
             P = {**P,**finf}
 
-            flist2 = flist[ikeep]
+            flist2 = flist[ikeep].astype(str) # for pathlib needs str, not bytes
             print(f'keeping/converting {flist2.shape[0]} out of {flist.shape[0]} files in {path}')
             if len(flist2) == 0:
                 return
@@ -111,7 +111,7 @@ def converter(p):
             append to HDF5 one spool file at a time to conserve RAM
             """
             # assuming all spool files are the same size
-            write_quota((path.parent/flist2.iloc[0]).stat().st_size * len(flist2), outfn)
+            write_quota((path.parent/flist2[0]).stat().st_size * len(flist2), outfn)
             for i,fn in enumerate(flist2):
                 fn = Path(path.parent/fn)
                 P['spoolfn'] = fn
