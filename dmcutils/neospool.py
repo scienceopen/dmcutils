@@ -84,11 +84,10 @@ def spoolpath(path:Path):
         flist = sorted(path.glob('*.dat')) # list of spool files in this directory
     elif path.is_file():
         if path.suffix == '.h5': # tick file we wrote putting filename in time order
-            #F = read_hdf(path,'filetick')
             with h5py.File(path,'r',libver='latest') as f:
-                F = f['fn'][:]
+                F = f['fn'][:].astype(str) # pathlib doesn't want bytes
                 P = Path(f['path'].value)
-            flist = [P/f for f in F]#.values]
+            flist = [P/f for f in F]
         else:
             flist = [path]
     else:
@@ -246,6 +245,13 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> pandas.Series:
             #http://docs.h5py.org/en/latest/strings.html
             f.create_dataset("fn", data=F.values,
                              dtype=h5py.special_dtype(vlen=bytes))
+#%% verify tick file writing
+        assert outfn.stat().st_size > 0, f'zero size tick file written {outfn}'
+        with h5py.File(outfn,'r', libver='latest') as f:
+            assert f['ticks'].size == F.index.size
+            assert f['path'] == str(flist[0].parent)
+            assert f['fn'].size == F.size
+
 # %% input checking
     assert isinstance(P, dict)
     assert isinstance(outfn,(str,Path))

@@ -12,7 +12,7 @@ python FileTick.py z:\2017-04-27\spool
 import sys
 from pathlib import Path
 from dmcutils.neospool import spoolparam,tickfile,spoolpath
-sys.tracebacklimit=1
+#sys.tracebacklimit=1
 #
 INIFN = 'acquisitionmetadata.ini' # autogen from Solis
 
