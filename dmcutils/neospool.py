@@ -247,7 +247,9 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> pandas.Series:
                              dtype=h5py.special_dtype(vlen=str))
             f['fn'][:] = F.values
 #%% verify tick file writing
-        assert outfn.stat().st_size > 0, f'zero size tick file written {outfn}'
+        if outfn.stat().st_size == 0:
+            raise IOError(f'zero size tick file written {outfn}')
+
         with h5py.File(outfn,'r') as f:
             assert f['ticks'].size == F.index.size
             assert f['path'].value == str(flist[0].parent)
@@ -286,7 +288,10 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> pandas.Series:
     except (IOError,OSError) as e:
         # use a unique filename in same directory
         logging.error(e)
-        _writeh5(F,mkstemp('.h5','index',outfn.parent),flist)
+        outfn = mkstemp('.h5','index',outfn.parent)
+        _writeh5(F,outfn,flist)
+
+    print(f'wrote and verified {outfn}')
 
     return F
 
