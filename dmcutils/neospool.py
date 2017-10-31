@@ -249,7 +249,7 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> pandas.Series:
         assert outfn.stat().st_size > 0, f'zero size tick file written {outfn}'
         with h5py.File(outfn,'r', libver='latest') as f:
             assert f['ticks'].size == F.index.size
-            assert f['path'] == str(flist[0].parent)
+            assert f['path'].value == str(flist[0].parent)
             assert f['fn'].size == F.size
 
 # %% input checking
