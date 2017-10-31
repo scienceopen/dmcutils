@@ -243,8 +243,9 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> pandas.Series:
             f['ticks'] = F.index
             f['path'] = str(flist[0].parent)
             #http://docs.h5py.org/en/latest/strings.html
-            f.create_dataset("fn", data=F.values,fletcher32=True,
+            f.create_dataset("fn", (F.size,), fletcher32=True,
                              dtype=h5py.special_dtype(vlen=str))
+            f['fn'][:] = F.values
 #%% verify tick file writing
         assert outfn.stat().st_size > 0, f'zero size tick file written {outfn}'
         with h5py.File(outfn,'r') as f:
