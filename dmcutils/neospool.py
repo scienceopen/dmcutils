@@ -239,7 +239,7 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> pandas.Series:
         #F.to_hdf(outfn, 'filetick', mode='w')
         #with h5py.File(outfn, 'a', libver='latest') as f:
         #    f['path'] = str(flist[0].parent)
-        with h5py.File(outfn, 'w', libver='latest') as f:
+        with h5py.File(outfn, 'w') as f:
             f['ticks'] = F.index
             f['path'] = str(flist[0].parent)
             #http://docs.h5py.org/en/latest/strings.html
@@ -247,7 +247,7 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> pandas.Series:
                              dtype=h5py.special_dtype(vlen=bytes))
 #%% verify tick file writing
         assert outfn.stat().st_size > 0, f'zero size tick file written {outfn}'
-        with h5py.File(outfn,'r', libver='latest') as f:
+        with h5py.File(outfn,'r') as f:
             assert f['ticks'].size == F.index.size
             assert f['path'].value == str(flist[0].parent)
             assert f['fn'].size == F.size
