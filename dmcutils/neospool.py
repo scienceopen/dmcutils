@@ -247,14 +247,18 @@ def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> pandas.Series:
                              dtype=h5py.special_dtype(vlen=str))
             f['fn'][:] = F.values
 #%% verify tick file writing
+        print(f'attempting tickfile size verification {outfn}')
         if outfn.stat().st_size == 0:
             raise IOError(f'zero size tick file written {outfn}')
 
+        print('tickfile size is > 0')
         with h5py.File(outfn,'r') as f:
             assert f['ticks'].size == F.index.size
+            print('verified ticks size')
             assert f['path'].value == str(flist[0].parent)
+            print('verified path')
             assert f['fn'].size == F.size
-
+            print('verified file list')
 # %% input checking
     assert isinstance(P, dict)
     assert isinstance(outfn,(str,Path))
