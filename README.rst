@@ -11,7 +11,7 @@ Installation
 ============
 ::
 
-    python setup.py develop
+    pip install -e .
 
 Functions
 =========
