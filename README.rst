@@ -1,3 +1,14 @@
+.. image:: https://travis-ci.org/scivision/dmcutils.svg?branch=master
+    :target: https://travis-ci.org/scivision/dmcutils
+    
+.. image:: https://coveralls.io/repos/github/scivision/dmcutils/badge.svg?branch=master
+    :target: https://coveralls.io/github/scivision/dmcutils?branch=master
+
+.. image:: https://api.codeclimate.com/v1/badges/4203c9d68d331350ce2f/maintainability
+   :target: https://codeclimate.com/github/scivision/dmcutils/maintainability
+   :alt: Maintainability
+
+
 =========
 dmcutils
 =========

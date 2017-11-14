@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-req=['nose','python-dateutil','pytz','pandas','h5py','scikit-image','matplotlib',
-     'tables','histutils','astrometry_azel','morecvutils']
+req=['nose','python-dateutil','pytz','pandas','h5py','scikit-image',
+     'histutils','morecvutils']
 # %%
 from setuptools import setup
 
@@ -12,6 +12,8 @@ setup(name='dmcutils',
       version='0.9',
 	  install_requires=req,
 	  python_requires='>=3.6',
-      extras_require={'web':['flask','flask-limiter']},
+      extras_require={'web':['flask','flask-limiter'],
+                      'plot':['matplotlib'],
+                      'io':['astrometry_azel'],},
 	  )
 
