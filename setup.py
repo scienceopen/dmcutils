@@ -2,10 +2,10 @@
 req=['nose','python-dateutil','pytz','pandas','h5py','scikit-image',
      'histutils','morecvutils']
 # %%
-from setuptools import setup
+from setuptools import setup,find_packages
 
 setup(name='dmcutils',
-      packages=['dmcutils'],
+      packages=find_packages(),
       author='Michael Hirsch, Ph.D.',
       url='https://github.com/scivision/dmcutils',
       description='Utilities to read and plot DMC Experiment data',
