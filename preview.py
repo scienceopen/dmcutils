@@ -4,7 +4,7 @@ Web server polling latest image (averaged over spool file) for Andor Neo Spool F
 uses OpenCV 3 with Python 3.6
 Michael Hirsch
 
-Prereqs: pip install flask flask-limiter
+Prereqs: python -m pip install flask flask-limiter
 
 Linux:
 nice -n 19 python preview.py ~/datadir
