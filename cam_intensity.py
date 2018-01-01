@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Assumes observing from 66.986330° N, 50.943941° W.  I did not take into account slight ground distance between camera and radar.

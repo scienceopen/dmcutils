@@ -306,7 +306,7 @@ def annowrite(I, newfn:Path, pngfn:Path):
 
     if cv2:
         cv2.putText(I,
-                    text=datetime.fromtimestamp(newfn.stat().st_mtime,tz=UTC).strftime('%x %X'),
+                    text=datetime.fromtimestamp(newfn.stat().st_mtime, tz=UTC).isoformat(),
                     org=(3,35),
                     fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                     fontScale=1.1,
