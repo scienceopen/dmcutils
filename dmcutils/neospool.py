@@ -232,7 +232,10 @@ def readNeoSpool(fn:Path, P:dict, ifrm=None, tickonly:bool=False, zerocols:int=0
 
 def tickfile(flist:list, P:dict, outfn:Path, zerocol:int) -> pandas.Series:
     """
-    sorts filenames into FPGA tick order so that you can read video in time order
+    sorts filenames into FPGA tick order so that you can read video in time order.
+
+    Because this is a time-expensive process, checks first to see if spool index exists, and
+    will abort if it already exists.
     """
     def _writeh5(F,outfn,flist):
         print(f'writing {outfn}')

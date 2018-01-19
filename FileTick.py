@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Reports first tick number in file vs filename
-I don't think filename are monotonic w.r.t. ticks.
+I don't think spool filenames are monotonic w.r.t. ticks.
 
 ./FileTick.py ~/H/neo2012-12-25/spool_5/ -xy 320 270 -s 648 -z 4
 
@@ -9,7 +9,6 @@ I don't think filename are monotonic w.r.t. ticks.
 
 python FileTick.py z:\2017-04-27\spool
 """
-import sys
 from pathlib import Path
 from dmcutils.neospool import spoolparam,tickfile,spoolpath
 #sys.tracebacklimit=1
@@ -17,15 +16,18 @@ from dmcutils.neospool import spoolparam,tickfile,spoolpath
 INIFN = 'acquisitionmetadata.ini' # autogen from Solis
 
 def filetick(indir:Path, xy:tuple, stride:int, tickfn:Path, zerocols:int):
+    """tickfile aborts before generating index if spool.h5 already exists"""
 
     flist = spoolpath(indir)
     if len(flist)==0:
         raise FileNotFoundError(f'no files found in {p.path}')
 
     P = spoolparam(flist[0].parent/INIFN, xy[0], xy[1], stride)
+
     F = tickfile(flist, P, tickfn, zerocols)
 
     return F
+
 
 if __name__ == '__main__':
     import signal
