@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-install_requires=['python-dateutil','pytz','pandas','h5py','scikit-image',
+install_requires=['python-dateutil','pytz','pandas','h5py','scikit-image','imageio',
      'histutils','morecvutils']
 tests_require=['nose','coveralls']
 # %%
@@ -11,7 +11,7 @@ setup(name='dmcutils',
       url='https://github.com/scivision/dmcutils',
       description='Utilities to read and plot DMC Experiment data',
       long_description=open('README.rst').read(),
-      version='0.9.0',
+      version='0.9.1',
       classifiers=[
       'Intended Audience :: Science/Research',
       'Development Status :: 3 - Alpha',

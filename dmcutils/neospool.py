@@ -7,8 +7,7 @@ from configparser import ConfigParser
 from datetime import datetime
 from pytz import UTC
 import numpy as np
-from scipy.ndimage import imread
-from scipy.misc import imsave
+import imageio
 import h5py
 import pandas
 try:
@@ -26,7 +25,7 @@ def preview_newest(path:Path, odir:Path, oldfset:set=None, inifn:str='acquisitio
     root = Path(path).expanduser()
 
     if (root/'image.bmp').is_file():
-        f8bit = imread(root/'image.bmp') # TODO check for 8 bit
+        f8bit = imageio.imread(root/'image.bmp') # TODO check for 8 bit
     elif root.is_dir(): # spool case
 #%% find newest file to extract images from
         newfn,oldfset = findnewest(root, oldfset, verbose)
@@ -318,7 +317,7 @@ def annowrite(I, newfn:Path, pngfn:Path):
 #%% write to disk
         cv2.imwrite(str(pngfn),I) #if using color, remember opencv requires BGR color order
     else:
-        imsave(pngfn, I)
+        imageio.imwrite(pngfn, I)
 # %%
 def oldspool(path, xy, bn, kineticsec, startutc, outfn:Path):
     """
