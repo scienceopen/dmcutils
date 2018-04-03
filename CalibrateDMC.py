@@ -10,7 +10,7 @@ from pathlib import Path
 from tempfile import mkstemp
 #
 # REQUIRES https://github.com/scivision/astrometry_azel
-from astrometry_azel.imgAvgStack import meanstack,writefits
+from astrometry_azel.io import meanstack,writefits
 from astrometry_azel import fits2azel
 
 def doplatescale(infn,outfn,latlon,ut1):
