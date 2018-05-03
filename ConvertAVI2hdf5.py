@@ -23,13 +23,14 @@ if __name__ == '__main__':
     p = p.parse_args()
 
     params = {'rotccw':p.rotccw,'transpose':p.transpose,
-              'flipud':p.flipud,'fliplr':p.fliplr,'sensorloc':p.coordinates}
+              'flipud':p.flipud,'fliplr':p.fliplr,'sensorloc':p.coordinates,
+              'cmdlog':' '.join(argv)}
 
     if p.fps is not None:
         params['kineticsec'] = 1/p.fps
     else:
         params['kineticsec'] = None
 
-    avi2hdf5(p.avifn, p.ofn, p.t0, params, ' '.join(argv))
+    avi2hdf5(p.avifn, p.ofn, p.t0, params)
 
 

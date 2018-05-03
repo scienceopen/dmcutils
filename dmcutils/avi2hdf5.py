@@ -2,16 +2,16 @@
 """
 convert AVI to HDF5
 """
+from pathlib import Path
 from sys import stderr
 import cv2
-from pathlib import Path
 import numpy as np
 #
 from morecvutils.getaviprop import getaviprop
-from histutils.vid2h5 import vid2h5
+from histutils import vid2h5
 from histutils.timedmc import frame2ut1
 
-def avi2hdf5(avifn,ofn,t0, P, cmdlog):
+def avi2hdf5(avifn:Path, ofn:Path, t0, P:dict):
     """
     t0: starting time
     avifn: input AVI
@@ -42,4 +42,4 @@ def avi2hdf5(avifn,ofn,t0, P, cmdlog):
 
     vid.release()
 
-    vid2h5(img8,ut1, rawind, None, ofn, P, cmdlog)
+    vid2h5(img8,ut1, rawind, None, ofn, P)

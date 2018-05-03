@@ -39,7 +39,7 @@ def converter(p):
 
     P = {'kineticsec':p.kineticsec,'rotccw':p.rotccw,'transpose':p.transpose,
          'flipud':p.flipud,'fliplr':p.fliplr,'fire':p.fire,
-             }
+         'cmdlog':' '.join(argv)}
 
     path = Path(p.path).expanduser()
     outfn = Path(p.outfn).expanduser()
@@ -116,7 +116,7 @@ def converter(p):
                 fn = Path(path.parent/fn)
                 P['spoolfn'] = fn
                 imgs, ticks, tsec = readNeoSpool(fn, P, zerocols=p.zerocols)
-                vid2h5(imgs, None, None, ticks, outfn, P, sys.argv, i, len(flist2), det, tstart)
+                vid2h5(imgs, None, None, ticks, outfn, P, i, len(flist2), det, tstart)
         else:
             print('writing metadata')
             rawind,ut1_unix = h5toh5(path, p.kineticsec, p.startutc)
