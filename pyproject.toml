@@ -1,8 +1,0 @@
-[build-system]
-requires = ["setuptools", "wheel",
-'python-dateutil','pytz','pandas','h5py','scikit-image',
-'histutils','morecvutils',
-'astrometry_azel',
-'matplotlib',
-'flask','flask-limiter',
- "nose"] 
