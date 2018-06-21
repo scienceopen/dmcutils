@@ -17,7 +17,7 @@ setup(name='dmcutils',
       description='Utilities to read and plot DMC Experiment data',
       long_description=open('README.md').read(),
       long_description_content_type="text/markdown",
-      version='0.9.1',
+      version='0.9.2',
       classifiers=[
           'Intended Audience :: Science/Research',
           'Development Status :: 3 - Alpha',
