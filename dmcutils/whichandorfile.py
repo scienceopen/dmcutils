@@ -3,7 +3,6 @@
 Assuming a series of Andor Solis saved files, which one has the desired time range given:
 start time, kinetic time
 """
-import logging
 from pathlib import Path
 from datetime import datetime, timedelta
 import numpy as np
@@ -52,7 +51,7 @@ def getandorfn(dt: timedelta, secperfile, firstfn: Path) -> Path:
     fn = firstfn.parent / (firstfn.stem + '_X{}.fits'.format(fnum))
     if not fn.is_file():
         raise FileNotFoundError(f'could not find {fn}')
-        
+
     return fn
 
 
