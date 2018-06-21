@@ -6,7 +6,7 @@ from scipy.misc import bytescale
 from histutils.timedmc import frame2ut1
 
 
-def h5toh5(fn,kineticsec,startutc):
+def h5toh5(fn: Path, kineticsec: float, startutc):
     """
     determine UTC time of each frame and index of each frame
     """
@@ -15,14 +15,14 @@ def h5toh5(fn,kineticsec,startutc):
     with h5py.File(fn, 'r', libver='latest') as f:
         data = f['/rawimg']
 
-        rawind = np.arange(data.shape[0])+1
+        rawind = np.arange(data.shape[0]) + 1
 
-    ut1 = frame2ut1(startutc,kineticsec,rawind)
+    ut1 = frame2ut1(startutc, kineticsec, rawind)
 
     return rawind, ut1
 
 
-def mean16to8(I):
+def mean16to8(I: np.ndarray):
     """
     input:
     I: uint16 ndarray image
@@ -35,6 +35,6 @@ def mean16to8(I):
     3. return uint8 image
     """
     fmean = I.mean(axis=0)
-    l,h = np.percentile(fmean, (0.5,99.5))
+    l, h = np.percentile(fmean, (0.5, 99.5))
 # %% 16 bit to 8 bit using scikit-image
     return bytescale(fmean, cmin=l, cmax=h)

@@ -10,19 +10,20 @@ I don't think spool filenames are monotonic w.r.t. ticks.
 python FileTick.py z:\2017-04-27\spool
 """
 from pathlib import Path
-from dmcutils.neospool import spoolparam,tickfile,spoolpath
-#sys.tracebacklimit=1
+from dmcutils.neospool import spoolparam, tickfile, spoolpath
+# sys.tracebacklimit=1
 #
-INIFN = 'acquisitionmetadata.ini' # autogen from Solis
+INIFN = 'acquisitionmetadata.ini'  # autogen from Solis
 
-def filetick(indir:Path, xy:tuple, stride:int, tickfn:Path, zerocols:int):
+
+def filetick(indir: Path, xy: tuple, stride: int, tickfn: Path, zerocols: int):
     """tickfile aborts before generating index if spool.h5 already exists"""
 
     flist = spoolpath(indir)
-    if len(flist)==0:
-        raise FileNotFoundError(f'no files found in {p.path}')
+    if len(flist) == 0:
+        raise FileNotFoundError(f'no files found in {indir}')
 
-    P = spoolparam(flist[0].parent/INIFN, xy[0], xy[1], stride)
+    P = spoolparam(flist[0].parent / INIFN, xy[0], xy[1], stride)
 
     F = tickfile(flist, P, tickfn, zerocols)
 
@@ -35,11 +36,15 @@ if __name__ == '__main__':
 
     from argparse import ArgumentParser
     p = ArgumentParser()
-    p.add_argument('path',help='path to Solis spool files')
-    p.add_argument('tickfn',help='HDF5 file to write with tick vs filename (for reading file in time order)')
-    p.add_argument('-xy',help='number of columns,rows',nargs=2,type=int,default=(640,540))
-    p.add_argument('-s','--stride',help='number of header bytes',type=int,default=1296)
-    p.add_argument('-z','--zerocols',help='number of zero columns',type=int,default=0)
-    p = p.parse_args()
+    p.add_argument('path', help='path to Solis spool files')
+    p.add_argument(
+        'tickfn', help='HDF5 file to write with tick vs filename (for reading file in time order)')
+    p.add_argument('-xy', help='number of columns,rows',
+                   nargs=2, type=int, default=(640, 540))
+    p.add_argument('-s', '--stride',
+                   help='number of header bytes', type=int, default=1296)
+    p.add_argument('-z', '--zerocols',
+                   help='number of zero columns', type=int, default=0)
+    P = p.parse_args()
 
-    F  = filetick(p.path, p.xy, p.stride, p.tickfn, p.zerocols)
+    F = filetick(P.path, P.xy, P.stride, P.tickfn, P.zerocols)

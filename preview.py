@@ -26,7 +26,8 @@ sys.tracebacklimit = 5
 
 serverlogfn = Path('~/server.log').expanduser()
 
-def preview_image_web(datadir:Path, htmldir:Path, update:int, verbose:bool):
+
+def preview_image_web(datadir: Path, htmldir: Path, update: int, verbose: bool):
     datadir = Path(datadir).expanduser()
     htmldir = Path(htmldir).expanduser()
     if not datadir.is_dir():
@@ -36,25 +37,25 @@ def preview_image_web(datadir:Path, htmldir:Path, update:int, verbose:bool):
 
     servlog = serverlogfn.open('a')
 # %% detect if server already running, if not, start it
-    subprocess.Popen(['python','Webserver.py','8088', str(htmldir)],
+    subprocess.Popen(['python', 'Webserver.py', '8088', str(htmldir)],
                      stderr=servlog)
 # %% every N seconds update the preview
-    ofn = htmldir/'latest.jpg'
-    oldfset = set()
+    ofn = htmldir / 'latest.jpg'
+    oldfset: set = set()
 
     while True:
         oldfset = preview_newest(datadir, ofn, oldfset, verbose=verbose)
         sleep(update)
 
+
 if __name__ == '__main__':
     from argparse import ArgumentParser
     p = ArgumentParser()
-    p.add_argument('datadir',help='directory to read preview data from')
-    p.add_argument('--update',help='update rate [sec]',type=int,default=60)
-    p.add_argument('--htmldir',help='directory to serve preview image from',
-                    default='static/')
-    p.add_argument('-v','--verbose',action='store_true')
-    p = p.parse_args()
+    p.add_argument('datadir', help='directory to read preview data from')
+    p.add_argument('--update', help='update rate [sec]', type=int, default=60)
+    p.add_argument('--htmldir', help='directory to serve preview image from',
+                   default='static/')
+    p.add_argument('-v', '--verbose', action='store_true')
+    P = p.parse_args()
 
-    preview_image_web(p.datadir, p.htmldir, p.update, p.verbose)
-
+    preview_image_web(P.datadir, P.htmldir, P.update, P.verbose)

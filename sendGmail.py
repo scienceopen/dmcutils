@@ -9,7 +9,8 @@ import smtplib
 from email.mime.text import MIMEText
 from getpass import getpass
 
-def sender(user:str, passw:str, to:list, email_text:str, server:str):
+
+def sender(user: str, passw: str, to: list, email_text: str, server: str):
     """
     Should use Oauth.
     """
@@ -17,23 +18,24 @@ def sender(user:str, passw:str, to:list, email_text:str, server:str):
         s.login(user, passw)
 
         msg = MIMEText(email_text)
-        msg['Subject']= 'DMC system status update'
-        msg['From']= user
+        msg['Subject'] = 'DMC system status update'
+        msg['From'] = user
         msg['To'] = ', '.join(to)
 
-        s.sendmail(user,to, msg.as_string())
+        s.sendmail(user, to, msg.as_string())
         s.quit()
 
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
     p = ArgumentParser()
-    p.add_argument('user',help='Gmail username')
-    p.add_argument('to',help='email address(es) to send to', nargs='+')
-    p.add_argument('-s','--server',help='SMTP server',default='smtp.gmail.com')
-    p = p.parse_args()
+    p.add_argument('user', help='Gmail username')
+    p.add_argument('to', help='email address(es) to send to', nargs='+')
+    p.add_argument('-s', '--server', help='SMTP server',
+                   default='smtp.gmail.com')
+    P = p.parse_args()
 
-    sender(p.user+'@gmail.com',
+    sender(P.user + '@gmail.com',
            getpass('gmail password'),
-           p.to,
-           "testing", p.server)
+           P.to,
+           "testing", P.server)

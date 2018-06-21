@@ -27,16 +27,16 @@ HIST = False
 
 
 def plotspool(path, kinetic, tstart):
-    flist = spoolpath(p.path)
+    flist = spoolpath(path)
 
-    P = spoolparam(flist[0].parent/INIFN)
-    P['kinetic'] = p.kinetic
+    P = spoolparam(flist[0].parent / INIFN)
+    P['kinetic'] = kinetic
     P['nfile'] = 0
     if P['kinetic'] is not None:
-        if p.tstart is None:
-            tstart = flist[0].stat().st_mtime - P['kinetic']*P['nframefile']
-        elif isinstance(p.tstart, (float, int)):
-            tstart = p.tstart
+        if tstart is None:
+            tstart = flist[0].stat().st_mtime - P['kinetic'] * P['nframefile']
+        elif isinstance(tstart, (float, int)):
+            tstart = tstart
         else:
             raise TypeError('tstart is Unix epoch seconds')
         tstartdt = datetime.utcfromtimestamp(tstart)
@@ -77,8 +77,8 @@ if __name__ == '__main__':
     p.add_argument('path', help='path to Solis spool files')
     p.add_argument('-k', '--kinetic', help='kinetic time [sec]', type=float)
     p.add_argument('-tstart', help='start time [Unix seconds]', type=float)
-    p = p.parse_args()
+    P = p.parse_args()
 
-    plotspool(p.path, p.kinetic, p.tstart)
+    plotspool(P.path, P.kinetic, P.tstart)
 
     show()
