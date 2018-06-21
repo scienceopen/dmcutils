@@ -1,8 +1,13 @@
+[![Zenodo](https://zenodo.org/badge/DOI/10.5281/zenodo.241127.svg)](https://zenodo.org/record/241127)
 [![Travis CI](https://travis-ci.org/scivision/dmcutils.svg?branch=master)](https://travis-ci.org/scivision/dmcutils)
 [![Coverage](https://coveralls.io/repos/github/scivision/dmcutils/badge.svg?branch=master)](https://coveralls.io/github/scivision/dmcutils?branch=master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/4203c9d68d331350ce2f/maintainability)](https://codeclimate.com/github/scivision/dmcutils/maintainability)
+[![pypi versions](https://img.shields.io/pypi/pyversions/dmcutils.svg)](https://pypi.python.org/pypi/dmcutils)
+[![pypi format](https://img.shields.io/pypi/format/dmcutils.svg)](https://pypi.python.org/pypi/dmcutils)
+[![PyPi Download stats](http://pepy.tech/badge/dmcutils)](http://pepy.tech/project/dmcutils)
 
-# dmcutils
+
+# DMC Utils
 
 
 Programs used to help with the Dual-Multi-sCale (DMC) experiment.
