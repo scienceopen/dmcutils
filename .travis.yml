@@ -7,23 +7,21 @@ python:
 os:
   - linux
 
-dist: trusty
-group: edge
-  
-
-notifications:
-  email: false
+group: travis_latest
 
 git:
   depth: 3
 
 
-before_install:
-  - pip -q install coveralls
+install: pip install -e .[tests]
 
-install: pip -q install -e .
+script: 
+  - pytest -v
+  - flake8
+#  - mypy . --ignore-missing-imports   # need new version of mypy
 
-script: coverage run tests/test.py -v
-
-after_success: coveralls
-
+after_success: 
+  - if [[ $TRAVIS_PYTHON_VERSION == 3.6* ]]; then
+    coverage run tests/test_all.py;
+    coveralls;
+    fi
