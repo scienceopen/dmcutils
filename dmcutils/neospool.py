@@ -10,7 +10,7 @@ import numpy as np
 import imageio
 import h5py
 import pandas
-from typing import Dict, Any
+from typing import Dict, Any, Sequence, Tuple
 try:
     import cv2
 except ImportError:
@@ -234,7 +234,7 @@ def readNeoSpool(fn: Path, P: dict, ifrm=None, tickonly: bool=False, zerocols: i
     return imgs, ticks, tsec
 
 
-def tickfile(flist: list, P: dict, outfn: Path, zerocol: int) -> pandas.Series:
+def tickfile(flist: Sequence[Path], P: dict, outfn: Path, zerocol: int) -> pandas.Series:
     """
     sorts filenames into FPGA tick order so that you can read video in time order.
 
@@ -297,10 +297,10 @@ def tickfile(flist: list, P: dict, outfn: Path, zerocol: int) -> pandas.Series:
     except (IOError, OSError) as e:
         # use a unique filename in same directory
         logging.error(f'{e}')
-        outfn = Path(mkstemp('.h5', 'index', dir=outfn.parent)[1])
+        outfn = Path(mkstemp('.h5', 'index', dir=outfn.parent)[1])  # type: ignore
         _writeh5(F, outfn, flist)
 
-    print(f'wrote and verified {outfn}')
+    print('wrote and verified', outfn)
 
     return F
 
@@ -324,7 +324,7 @@ def annowrite(I, newfn: Path, pngfn: Path):
 # %%
 
 
-def oldspool(path, xy, bn, kineticsec, startutc, outfn: Path):
+def oldspool(path: Path, xy: Tuple[int, int], bn, kineticsec: float, startutc, outfn: Path):
     """
     Matlab Engine import can screw up sometimes, better to import only when truly needed.
     """

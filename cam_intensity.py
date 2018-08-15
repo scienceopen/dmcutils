@@ -10,7 +10,6 @@ Sondrestrom ISR was pointing at 80.55 el, 141.0 az from 23:03:48 to 23:06:36
 from pathlib import Path
 from os import devnull
 from datetime import datetime
-from pytz import UTC
 from numpy import empty, ones, unravel_index, percentile
 from numpy.ma import masked_where
 import h5py
@@ -82,7 +81,7 @@ def loadplot(imgfn, calfn, israzel, isrvalid, showmovie, writemovie):
         Nimg = imgs.shape[0]
         print('{} images loaded from {}'.format(Nimg, imgfn))
 # %% Statistics of image pixels corresponding to ISR beam
-        t = [datetime.fromtimestamp(ut, tz=UTC) for ut in uts[utind]]
+        t = [datetime.utcfromtimestamp(ut) for ut in uts[utind]]
 # %% plotting
 
         if showmovie or writemovie:
@@ -169,18 +168,18 @@ if __name__ == '__main__':
     if 0:  # juha 11-14
         imgfn = '~/data/2015-11-14/2015-11-14T0149-0202.h5'
         israzel = (141., 80.55)
-        isrvalid = (datetime(2015, 11, 14, 1, 55, 9, tzinfo=UTC),
-                    datetime(2015, 11, 14, 1, 55, 49, tzinfo=UTC))
+        isrvalid = (datetime(2015, 11, 14, 1, 55, 9),
+                    datetime(2015, 11, 14, 1, 55, 49))
     if 0:  # juha 11-15
         imgfn = "~/data/2015-11-15/2015-11-15T2304-2306.h5"
         israzel = (141., 80.55),  # (321.,89.5)
-        isrvalid = (datetime(2015, 11, 15, 23, 3, 48, tzinfo=UTC),
-                    datetime(2015, 11, 15, 23, 6, 36, tzinfo=UTC))
+        isrvalid = (datetime(2015, 11, 15, 23, 3, 48),
+                    datetime(2015, 11, 15, 23, 6, 36))
     if 1:  # asti
         imgfn = "~/data/2015-11-15/2015-11-15T2318-2320.h5"
         israzel = (141., 80.55)
-        isrvalid = (datetime(2015, 11, 15, 23, 18, 5, tzinfo=UTC),
-                    datetime(2015, 11, 15, 23, 19, 53, tzinfo=UTC))
+        isrvalid = (datetime(2015, 11, 15, 23, 18, 5),
+                    datetime(2015, 11, 15, 23, 19, 53))
 
     loadplot(imgfn, calfn, israzel, isrvalid, P.showmovie, P.writemovie)
 
