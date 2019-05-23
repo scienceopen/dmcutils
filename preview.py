@@ -10,7 +10,7 @@ Linux:
 nice -n 19 python preview.py ~/datadir
 
 Windows:
-start /low python preview.py d:\datadir
+start /low python preview.py ~/datadir
 
 Note that subprocesses have priority of calling function, so we don't need "nice"
 in the Popen command.

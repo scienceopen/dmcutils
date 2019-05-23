@@ -2,26 +2,22 @@ language: python
 group: travis_latest
 
 git:
-  depth: 3
+  depth: 25
   quiet: true
 
 python:
 - 3.6
-# - 3.7  waiting py37 wheels
 
 os:
 - linux
 
-install: pip install -e .[tests]
+install: pip install -e .[tests,cov]
 
-script: 
+script:
 - pytest -rsv
 - flake8
-#  - mypy . --ignore-missing-imports   # need new version of mypy
+- mypy .
 
 after_success:
-- if [[ $TRAVIS_PYTHON_VERSION == 3.6* ]]; then
-  pytest --cov --cov-config=setup.cfg;
-  coveralls;
-  fi
-
+- pytest --cov
+- coveralls

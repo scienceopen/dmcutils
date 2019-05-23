@@ -7,7 +7,7 @@ I don't think spool filenames are monotonic w.r.t. ticks.
 
 ./FileTick.py ~/data/testdmc
 
-python FileTick.py z:\2017-04-27\spool
+python FileTick.py ~/data/2017-04-27/spool
 """
 from pathlib import Path
 from dmcutils.neospool import spoolparam, tickfile, spoolpath

@@ -18,4 +18,4 @@ def test_neoparam():
 
 
 if __name__ == '__main__':
-    pytest.main()
+    pytest.main(['-rsv', __file__])

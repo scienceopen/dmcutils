@@ -23,7 +23,7 @@ from histutils.timedmc import frame2ut1
 DTYPE = np.uint16
 
 
-def preview_newest(path: Path, odir: Path, oldfset: set=None, inifn: str='acquisitionmetadata.ini', verbose: bool=False):
+def preview_newest(path: Path, odir: Path, oldfset: set = None, inifn: str = 'acquisitionmetadata.ini', verbose: bool = False):
     root = Path(path).expanduser()
 
     if (root / 'image.bmp').is_file():
@@ -48,7 +48,7 @@ def preview_newest(path: Path, odir: Path, oldfset: set=None, inifn: str='acquis
     return oldfset
 
 
-def findnewest(path: Path, oldset: set=None, verbose: bool=False):
+def findnewest(path: Path, oldset: set = None, verbose: bool = False):
     assert path, f'{path} is empty'
     path = Path(path).expanduser()
     if not path.exists():
@@ -100,8 +100,8 @@ def spoolpath(path: Path):
     return flist
 
 
-def spoolparam(inifn: Path, superx: int=None, supery: int=None,
-               stride: int=None) -> Dict[str, Any]:
+def spoolparam(inifn: Path, superx: int = None, supery: int = None,
+               stride: int = None) -> Dict[str, Any]:
     inifn = Path(inifn).expanduser()
 
     if not inifn.is_file():
@@ -143,7 +143,7 @@ def spoolparam(inifn: Path, superx: int=None, supery: int=None,
     return P
 
 
-def readNeoSpool(fn: Path, P: dict, ifrm=None, tickonly: bool=False, zerocols: int=0):
+def readNeoSpool(fn: Path, P: dict, ifrm=None, tickonly: bool = False, zerocols: int = 0):
     """
     for 2012-present Neo/Zyla sCMOS Andor Solis spool files.
     reads a SINGLE spool file and returns the image frames & FPGA ticks
