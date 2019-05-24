@@ -22,11 +22,11 @@ def test_h5race(outfn: Path, N: int):
 # %% writing HDF5 iprintndex
     print(f'writing {outfn}')
     F.to_hdf(outfn, 'filetick', mode='w')
-    with h5py.File(outfn, 'a', libver='latest') as f:
+    with h5py.File(outfn, 'a') as f:
         f['path'] = str(flist[0].parent)
 # %% test read
-    with h5py.File(outfn, 'r', libver='latest') as f:
-        print(f['path'].value)
+    with h5py.File(outfn, 'r') as f:
+        print(f['path'][()])
 
 
 if __name__ == '__main__':

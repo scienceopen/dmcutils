@@ -88,7 +88,7 @@ def spoolpath(path: Path):
         if path.suffix == '.h5':  # tick file we wrote putting filename in time order
             with h5py.File(path, 'r', libver='latest') as f:
                 F = f['fn'][:].astype(str)  # pathlib doesn't want bytes
-                P = Path(f['path'].value)
+                P = Path(f['path'][()])
             flist = [P / f for f in F]
         else:
             flist = [path]
@@ -260,7 +260,7 @@ def tickfile(flist: Sequence[Path], P: dict, outfn: Path, zerocol: int) -> panda
         with h5py.File(outfn, 'r') as f:
             assert f['ticks'].size == F.index.size
             print('verified ticks size')
-            assert f['path'].value == str(flist[0].parent)
+            assert f['path'][()] == str(flist[0].parent)
             print('verified path')
             assert f['fn'].size == F.size
             print('verified file list')
