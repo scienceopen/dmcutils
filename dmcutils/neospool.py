@@ -359,7 +359,7 @@ def oldspool(path: Path, xy: Tuple[int, int], bn, kineticsec: float, startutc, o
         eng = matlab.engine.start_matlab("-nojvm")  # nojvm makes vastly faster, disables plots
     else:
         raise ImportError(
-            'matlab engine not yet setup. see\n https://scivision.co/matlab-engine-callable-from-python-how-to-install-and-setup/')
+            'matlab engine not yet setup. see\n https://scivision.dev/matlab-engine-callable-from-python-how-to-install-and-setup/')
 
     try:
         nx, ny = xy[0] // bn[0], xy[1] // bn[1]
