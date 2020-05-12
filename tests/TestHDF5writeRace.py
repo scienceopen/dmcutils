@@ -13,28 +13,28 @@ def test_h5race(outfn: Path, N: int):
     assert isinstance(N, int)
 
     ticks = np.random.randint(0, N, N)
-    flist = [Path(f'{n:010d}spool.dat') for n in np.random.randint(0, N, N)]
+    flist = [Path(f"{n:010d}spool.dat") for n in np.random.randint(0, N, N)]
 
     F = Series(index=ticks, data=[f.name for f in flist])
     F.sort_index(inplace=True)
-    print(f'sorted {len(flist)} files vs. time ticks')
+    print(f"sorted {len(flist)} files vs. time ticks")
 
-# %% writing HDF5 iprintndex
-    print(f'writing {outfn}')
-    F.to_hdf(outfn, 'filetick', mode='w')
-    with h5py.File(outfn, 'a') as f:
-        f['path'] = str(flist[0].parent)
-# %% test read
-    with h5py.File(outfn, 'r') as f:
-        print(f['path'][()])
+    # %% writing HDF5 iprintndex
+    print(f"writing {outfn}")
+    F.to_hdf(outfn, "filetick", mode="w")
+    with h5py.File(outfn, "a") as f:
+        f["path"] = str(flist[0].parent)
+    # %% test read
+    with h5py.File(outfn, "r") as f:
+        print(f["path"][()])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from argparse import ArgumentParser
+
     p = ArgumentParser()
-    p.add_argument('outfn', nargs='?', default=mkstemp(suffix='.h5')[1])
-    p.add_argument('-N', help='number of elements to write',
-                   type=int, default=1e6)
+    p.add_argument("outfn", nargs="?", default=mkstemp(suffix=".h5")[1])
+    p.add_argument("-N", help="number of elements to write", type=int, default=1e6)
     p = p.parse_args()
 
     test_h5race(p.outfn, int(p.N))

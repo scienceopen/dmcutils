@@ -25,6 +25,7 @@ from pathlib import Path
 import h5py
 from sys import argv
 import numpy as np
+
 #
 from histutils import vid2h5, write_quota
 from dmcutils import h5toh5
@@ -36,19 +37,25 @@ W = 51  # keep +/-  W/2 frames around detection
 def converter(p):
     tic = time()
 
-    P = {'kineticsec': p.kineticsec, 'rotccw': p.rotccw, 'transpose': p.transpose,
-         'flipud': p.flipud, 'fliplr': p.fliplr, 'fire': p.fire,
-         'cmdlog': ' '.join(argv)}
+    P = {
+        "kineticsec": p.kineticsec,
+        "rotccw": p.rotccw,
+        "transpose": p.transpose,
+        "flipud": p.flipud,
+        "fliplr": p.fliplr,
+        "fire": p.fire,
+        "cmdlog": " ".join(argv),
+    }
 
     path = Path(p.path).expanduser()
     outfn = Path(p.outfn).expanduser()
     if outfn.is_file():
-        raise IOError(f'extracted file {outfn} already exists')
+        raise IOError(f"extracted file {outfn} already exists")
 
-    if path.is_file() and path.suffix == '.h5':
-        with h5py.File(path, 'r') as f:
+    if path.is_file() and path.suffix == ".h5":
+        with h5py.File(path, "r") as f:
             # tickfile = 'filetick' in f  # spool file index
-            tickfile = 'ticks' in f
+            tickfile = "ticks" in f
 
         if tickfile:
             """
@@ -56,123 +63,106 @@ def converter(p):
             2. (optional) read detection file
             3. convert specified file to HDF5
             """
-            spoolini = path.parent / 'acquisitionmetadata.ini'
+            spoolini = path.parent / "acquisitionmetadata.ini"
             if p.startutc is None:
                 tstart = spoolini.stat().st_ctime  # crude measure of start time
             else:
                 tstart = parse(p.startutc).timestamp()
             assert isinstance(tstart, (float, int))
-# %% 1.
-            with h5py.File(path, 'r', libver='latest') as f:
-                flist = f['fn'][:]
+            # %% 1.
+            with h5py.File(path, "r", libver="latest") as f:
+                flist = f["fn"][:]
 
-# %% 2. select which file to convert...automatically
+            # %% 2. select which file to convert...automatically
             if p.detfn:
                 detfn = Path(p.detfn).expanduser()
-                with h5py.File(detfn, 'r', libver='latest') as f:
-                    det = f['/detect'][:]
+                with h5py.File(detfn, "r", libver="latest") as f:
+                    det = f["/detect"][:]
 
                 upfact = flist.shape[0] // det.size
 
                 if not 1 <= upfact <= 20:
-                    logging.error(f'was {detfn} sampled correctly?')
+                    logging.error(f"was {detfn} sampled correctly?")
                     return
 
                 det2 = np.zeros(flist.shape[0])
                 try:
-                    det2[:det.size * upfact - 1:upfact] = det  # gaps are zeros
+                    det2[: det.size * upfact - 1: upfact] = det  # gaps are zeros
                 except ValueError:  # off by one
-                    det2[:det.size * upfact:upfact] = det  # gaps are zeros
+                    det2[: det.size * upfact: upfact] = det  # gaps are zeros
 
-                assert abs(len(
-                    flist) - det2.size) <= 20, f'{detfn} and {path} are maybe not for the same spool data file directory'
+                assert abs(len(flist) - det2.size) <= 20, f"{detfn} and {path} are maybe not for the same spool data file directory"
                 det = det2
 
                 # keeps Lkeep/2 files each side of first/last detection.
                 Lkeep = np.ones(min(len(flist), W), dtype=int)
 
-                ikeep = np.convolve(det, Lkeep, 'same').astype(bool)
+                ikeep = np.convolve(det, Lkeep, "same").astype(bool)
                 det = det[ikeep]
 
-                assert len(det) == ikeep.sum(
-                ), f'len(det): {len(det)}  ikeep.sum(): {ikeep.sum()}'
-                assert len(ikeep) == len(
-                    flist), f'len(flist): {len(flist)} len(ikeep): {len(ikeep)}'
+                assert len(det) == ikeep.sum(), f"len(det): {len(det)}  ikeep.sum(): {ikeep.sum()}"
+                assert len(ikeep) == len(flist), f"len(flist): {len(flist)} len(ikeep): {len(ikeep)}"
             # just convert all spool files (can be terabyte+ of data into HDF5)
             else:
-                print('no detection file specified, converting all Spool files')
+                print("no detection file specified, converting all Spool files")
                 det = np.ones(flist.shape[0], dtype=bool)
                 ikeep = slice(None)
-# %% 3.
-            finf = spoolparam(
-                spoolini, p.xy[0] // p.bin[0], p.xy[1] // p.bin[1], p.stride)
+            # %% 3.
+            finf = spoolparam(spoolini, p.xy[0] // p.bin[0], p.xy[1] // p.bin[1], p.stride)
             P = {**P, **finf}
 
             # for pathlib needs str, not bytes
             flist2 = flist[ikeep].astype(str)
-            print(
-                f'keeping/converting {flist2.shape[0]} out of {flist.shape[0]} files in {path}')
+            print(f"keeping/converting {flist2.shape[0]} out of {flist.shape[0]} files in {path}")
             if len(flist2) == 0:
                 return
             """
             append to HDF5 one spool file at a time to conserve RAM
             """
             # assuming all spool files are the same size
-            write_quota(
-                (path.parent / flist2[0]).stat().st_size * len(flist2), outfn)
+            write_quota((path.parent / flist2[0]).stat().st_size * len(flist2), outfn)
             for i, fn in enumerate(flist2):
                 fn = Path(path.parent / fn)
-                P['spoolfn'] = fn
+                P["spoolfn"] = fn
                 imgs, ticks, tsec = readNeoSpool(fn, P, zerocols=p.zerocols)
-                vid2h5(imgs, None, None, ticks, outfn,
-                       P, i, len(flist2), det, tstart)
+                vid2h5(imgs, None, None, ticks, outfn, P, i, len(flist2), det, tstart)
         else:
-            print('writing metadata')
+            print("writing metadata")
             rawind, ut1_unix = h5toh5(path, p.kineticsec, p.startutc)
             vid2h5(None, ut1_unix, rawind, outfn, P)
     elif p.broken:  # ancient spool file < 2011
-        rawind, ut1_unix = oldspool(
-            path, p.xy, p.bin, p.kineticsec, p.startutc, outfn)
+        rawind, ut1_unix = oldspool(path, p.xy, p.bin, p.kineticsec, p.startutc, outfn)
         vid2h5(None, ut1_unix, rawind, outfn, P)
     else:
-        raise FileNotFoundError(
-            f'Did not find an Index file to work with: {p}')
+        raise FileNotFoundError(f"Did not find an Index file to work with: {p}")
 
-    print(f'wrote {outfn} in {time()-tic:.1f} sec.')
+    print(f"wrote {outfn} in {time()-tic:.1f} sec.")
 
 
 if __name__ == "__main__":
     import signal
+
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     from argparse import ArgumentParser
-    p = ArgumentParser(
-        description='Andor Neo Spool reader, plotter, converter')
-    p.add_argument(
-        'path', help='path containing 12-bit Neo spool files in broken format (2008-spring 2011)')
-    p.add_argument('-detfn', help='path to detections.h5 file')
-    p.add_argument('-xy', help='nx ny  number of x and y pixels respectively',
-                   nargs=2, default=(2544, 2160), type=int)
-    p.add_argument('-b', '--bin', help='nx ny  number of x and y binning respectively',
-                   nargs=2, default=(1, 1), type=int)
-    p.add_argument('-k', '--kineticsec',
-                   help='kinetic rate of camera (sec)  = 1/fps', type=float)
-    p.add_argument(
-        '--rotccw', help='rotate CCW value in 90 deg. steps', type=int, default=0)
-    p.add_argument('--transpose', help='transpose image', action='store_true')
-    p.add_argument('--flipud', help='vertical flip', action='store_true')
-    p.add_argument('--fliplr', help='horizontal flip', action='store_true')
-    p.add_argument('-s', '--startutc', help='utc time of nights recording')
-    p.add_argument('-o', '--outfn',
-                   help='extract raw data into this file [h5,fits,mat]')
-    p.add_argument('-v', '--verbose', help='debugging',
-                   action='count', default=0)
-    p.add_argument('-stride', help='length of footer in spool file', type=int)
-    p.add_argument('-z', '--zerocols',
-                   help='number of zero columns in spool file', type=int, default=8)
-    p.add_argument('-fire', help='fire filename')
-    p.add_argument(
-        '-broken', help='enables special Matlab reader for broken 2009-2010 spool files', action='store_true')
+
+    p = ArgumentParser(description="Andor Neo Spool reader, plotter, converter")
+    p.add_argument("path", help="path containing 12-bit Neo spool files in broken format (2008-spring 2011)")
+    p.add_argument("-detfn", help="path to detections.h5 file")
+    p.add_argument("-xy", help="nx ny  number of x and y pixels respectively", nargs=2, default=(2544, 2160), type=int)
+    p.add_argument("-b", "--bin", help="nx ny  number of x and y binning respectively", nargs=2, default=(1, 1), type=int)
+    p.add_argument("-k", "--kineticsec", help="kinetic rate of camera (sec)  = 1/fps", type=float)
+    p.add_argument("--rotccw", help="rotate CCW value in 90 deg. steps", type=int, default=0)
+    p.add_argument("--transpose", help="transpose image", action="store_true")
+    p.add_argument("--flipud", help="vertical flip", action="store_true")
+    p.add_argument("--fliplr", help="horizontal flip", action="store_true")
+    p.add_argument("-s", "--startutc", help="utc time of nights recording")
+    p.add_argument("-o", "--outfn", help="extract raw data into this file [h5,fits,mat]")
+    p.add_argument("-v", "--verbose", help="debugging", action="count", default=0)
+    p.add_argument("-stride", help="length of footer in spool file", type=int)
+    p.add_argument("-z", "--zerocols", help="number of zero columns in spool file", type=int, default=8)
+    p.add_argument("-fire", help="fire filename")
+    p.add_argument("-broken", help="enables special Matlab reader for broken 2009-2010 spool files", action="store_true")
     P = p.parse_args()
 
     converter(P)

@@ -6,6 +6,7 @@ from pathlib import Path
 from sys import stderr
 import cv2
 import numpy as np
+
 #
 from morecvutils.getaviprop import getaviprop
 from histutils import vid2h5
@@ -22,21 +23,21 @@ def avi2hdf5(avifn: Path, ofn: Path, t0, P: dict):
     avifn = Path(avifn).expanduser()
 
     finf = getaviprop(avifn)
-    P['superx'] = finf['xpix']
-    P['supery'] = finf['ypix']
-    P['nframe'] = finf['nframe']
-# %% time vector
-    rawind = np.arange(P['nframe']) + 1
-    ut1 = frame2ut1(t0, P['kineticsec'], rawind)
-# %% ingest data (consider RAM)
+    P["superx"] = finf["xpix"]
+    P["supery"] = finf["ypix"]
+    P["nframe"] = finf["nframe"]
+    # %% time vector
+    rawind = np.arange(P["nframe"]) + 1
+    ut1 = frame2ut1(t0, P["kineticsec"], rawind)
+    # %% ingest data (consider RAM)
     # NOTE someday could do iterative read/write, would be smarter.
     vid = cv2.VideoCapture(str(avifn))
-    img8 = np.zeros((P['nframe'], P['supery'], P['superx']), dtype=np.uint8)  # zeros in case bad frame
+    img8 = np.zeros((P["nframe"], P["supery"], P["superx"]), dtype=np.uint8)  # zeros in case bad frame
 
-    for i in range(P['nframe']):
+    for i in range(P["nframe"]):
         ret, img = vid.read()  # a 3-D Numpy array, last axis is BGR: blue,green,red
         if not ret:
-            print('error on frame', i, file=stderr)
+            print("error on frame", i, file=stderr)
             continue
         img8[i, ...] = img[..., 0]  # note assumes already grayscale
 
