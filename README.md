@@ -2,7 +2,7 @@
 
 [![Zenodo](https://zenodo.org/badge/DOI/10.5281/zenodo.241127.svg)](https://zenodo.org/record/241127)
 
-[![Travis CI](https://travis-ci.org/space-physics/dmcutils.svg?branch=master)](https://travis-ci.org/space-physics/dmcutils)
+[![Travis CI](https://travis-ci.org/space-physics/dmcutils.svg)](https://travis-ci.org/space-physics/dmcutils)
 [![pypi versions](https://img.shields.io/pypi/pyversions/dmcutils.svg)](https://pypi.python.org/pypi/dmcutils)
 [![PyPi Download stats](http://pepy.tech/badge/dmcutils)](http://pepy.tech/project/dmcutils)
 
