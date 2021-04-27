@@ -21,7 +21,9 @@ def doplatescale(infn, outfn, latlon, ut1):
     meanimg, ut1 = meanstack(infn, 10, ut1)
     writefits(meanimg, fitsfn)
     # %%
-    x, y, ra, dec, az, el, timeFrame = fits2azel(fitsfn, latlon, ut1, ["show", "h5", "png"], (0, 2800))
+    x, y, ra, dec, az, el, timeFrame = fits2azel(
+        fitsfn, latlon, ut1, ["show", "h5", "png"], (0, 2800)
+    )
 
 
 if __name__ == "__main__":
@@ -29,8 +31,16 @@ if __name__ == "__main__":
 
     p = ArgumentParser(description="do plate scaling for 2013 Jan 13 CMOS data")
     p.add_argument("infn", help="image data file name")
-    p.add_argument("-o", "--outfn", help="platescale data file name to write", default=mkstemp(".h5")[1])
-    p.add_argument("--latlon", help="wgs84 coordinates of cameras (deg.)", nargs=2, default=(66.986330, -50.943941), type=float)
+    p.add_argument(
+        "-o", "--outfn", help="platescale data file name to write", default=mkstemp(".h5")[1]
+    )
+    p.add_argument(
+        "--latlon",
+        help="wgs84 coordinates of cameras (deg.)",
+        nargs=2,
+        default=(66.986330, -50.943941),
+        type=float,
+    )
     p.add_argument("--ut1", help="force UT1 time yyyy-mm-ddTHH:MM:SSZ")
     P = p.parse_args()
 

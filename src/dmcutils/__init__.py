@@ -1,7 +1,7 @@
+from __future__ import annotations
 from pathlib import Path
 import h5py
 import numpy as np
-import typing as T
 
 #
 from histutils.timedmc import frame2ut1
@@ -41,10 +41,10 @@ def mean16to8(img: np.ndarray) -> np.ndarray:
     fmean = img.mean(axis=0)
     ln, h = np.percentile(fmean, (0.5, 99.5))
     # %% 16 bit to 8 bit using scikit-image
-    return bytescale(fmean, (ln, h))
+    return bytescale(fmean, (ln, h))  # type: ignore
 
 
-def bytescale(img: np.ndarray, Clim: T.Tuple[int, int]) -> np.ndarray:
+def bytescale(img: np.ndarray, Clim: tuple[int, int]) -> np.ndarray:
     """
     stretch uint16 data to uint8 data e.g. images
     Parameters
@@ -60,7 +60,7 @@ def bytescale(img: np.ndarray, Clim: T.Tuple[int, int]) -> np.ndarray:
     return Q.astype(np.uint8)  # convert to uint8
 
 
-def normframe(img: np.ndarray, Clim: T.Tuple[int, int]) -> np.ndarray:
+def normframe(img: np.ndarray, Clim: tuple[int, int]) -> np.ndarray:
     """
     Normalize array to [0, 1]
     Parameters
@@ -73,4 +73,4 @@ def normframe(img: np.ndarray, Clim: T.Tuple[int, int]) -> np.ndarray:
     Vmin = Clim[0]
     Vmax = Clim[1]
 
-    return (img.astype(np.float32).clip(Vmin, Vmax) - Vmin) / (Vmax - Vmin)
+    return (img.astype(np.float32).clip(Vmin, Vmax) - Vmin) / (Vmax - Vmin)  # type: ignore

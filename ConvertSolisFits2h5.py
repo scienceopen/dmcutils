@@ -26,7 +26,9 @@ if __name__ == "__main__":
     from sys import argv
     from argparse import ArgumentParser
 
-    p = ArgumentParser(description="converts multiple Andor Solis FITS files into one HDF5 with timestamps")
+    p = ArgumentParser(
+        description="converts multiple Andor Solis FITS files into one HDF5 with timestamps"
+    )
     p.add_argument("flist", help="file(s) to convert to one HDF5 file", nargs="+")
     p.add_argument("ofn", help="extract raw data into this file [h5]")
     p.add_argument("--rotccw", help="rotate CCW value in 90 deg. steps", type=int, default=0)
@@ -34,7 +36,12 @@ if __name__ == "__main__":
     p.add_argument("--flipud", help="vertical flip", action="store_true")
     p.add_argument("--fliplr", help="horizontal flip", action="store_true")
     p.add_argument(
-        "-c", "--coordinates", help="wgs84 coordinates of sensor (lat,lon,alt_m)", nargs=3, default=(nan, nan, nan), type=float
+        "-c",
+        "--coordinates",
+        help="wgs84 coordinates of sensor (lat,lon,alt_m)",
+        nargs=3,
+        default=(nan, nan, nan),
+        type=float,
     )
     P = p.parse_args()
 

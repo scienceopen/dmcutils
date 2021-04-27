@@ -3,15 +3,16 @@
 Assuming a series of Andor Solis saved files, which one has the desired time range given:
 start time, kinetic time
 """
+
+from __future__ import annotations
 from pathlib import Path
 from datetime import datetime, timedelta
 import numpy as np
-from typing import Tuple, Union
 from dateutil.parser import parse
 from astropy.io import fits
 
 
-def whichfile(firstfn: Path, treq: np.ndarray) -> Tuple[Path, Union[None, Path]]:
+def whichfile(firstfn: Path, treq: list[datetime]) -> tuple[Path, Path]:
     """
     reads the first file in a kinetic series saved by Andor Solis to find
     which filename corresponds to a desired time
@@ -20,22 +21,26 @@ def whichfile(firstfn: Path, treq: np.ndarray) -> Tuple[Path, Union[None, Path]]
     treq: single or pair of datetime to request
     """
     firstfn = Path(firstfn).expanduser()
-    treq = np.atleast_1d(treq)
+    treq = np.atleast_1d(np.asarray(treq))
     assert isinstance(treq[0], datetime)
 
     with fits.open(str(firstfn), "readonly") as h:
         kineticsec = h[0].header["KCT"]
         framesperfile = h[0].header["NAXIS3"]
-        tstartseries = parse(h[0].header["FRAME"] + "Z")  # NOTE: you must specify first file in series!
+        tstartseries = parse(
+            h[0].header["FRAME"] + "Z"
+        )  # NOTE: you must specify first file in series!
 
     secondsperfile = kineticsec * framesperfile
 
     dt = treq[0] - tstartseries
-    assert dt >= timedelta(0), "your time {} is before the first file start {}".format(treq[0], tstartseries)
+    assert dt >= timedelta(0), "your time {} is before the first file start {}".format(
+        treq[0], tstartseries
+    )
     # %% start file
     startfn = getandorfn(dt, secondsperfile, firstfn)
     # %% last file
-    lastfn: Union[None, Path]
+    lastfn: Path
     if treq.size > 1:
         lastfn = getandorfn(treq[-1] - tstartseries, secondsperfile, firstfn)
     else:
@@ -45,7 +50,7 @@ def whichfile(firstfn: Path, treq: np.ndarray) -> Tuple[Path, Union[None, Path]]
 
 
 def getandorfn(dt: timedelta, secperfile, firstfn: Path) -> Path:
-    """ generate Solis sequential FITS filename based on elapsed time"""
+    """generate Solis sequential FITS filename based on elapsed time"""
     fnum = dt // timedelta(seconds=secperfile)
 
     fn = firstfn.parent / (firstfn.stem + "_X{}.fits".format(fnum))

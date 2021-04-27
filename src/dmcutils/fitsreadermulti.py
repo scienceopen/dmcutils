@@ -20,7 +20,9 @@ def fitsreadermulti(flist: List[Path], outfn: Path) -> tuple:
     # %% get size of each image
     with fits.open(flist[0], "readonly") as f:
         # no .ndim in astropy.io.fits 1.2
-        assert len(f[0].shape) == 3, "i expect multiple images per file. Trivial change to one image per file"
+        assert (
+            len(f[0].shape) == 3
+        ), "i expect multiple images per file. Trivial change to one image per file"
         Y, X = f[0].shape[-2:]
         header = dict(f[0].header)
     # %% find total number of frames in all specified files
@@ -51,7 +53,7 @@ def fitsreadermulti(flist: List[Path], outfn: Path) -> tuple:
                 N = h[0].shape[0]
 
                 finf = getNeoParam(f)
-                ut1_unix[lastframe: lastframe + N] = finf["ut1"]
+                ut1_unix[lastframe : lastframe + N] = finf["ut1"]
 
                 imgwriteincr(outfn, h[0].data, slice(lastframe, lastframe + N))
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+from __future__ import annotations
 from pathlib import Path
 from tempfile import mkstemp
 from time import time, sleep
@@ -10,7 +10,7 @@ import numpy as np
 import imageio
 import h5py
 import pandas
-from typing import Dict, Any, Sequence, Tuple
+from typing import Any
 
 try:
     import cv2
@@ -24,7 +24,13 @@ from histutils.timedmc import frame2ut1
 DTYPE = np.uint16
 
 
-def preview_newest(path: Path, odir: Path, oldfset: set = None, inifn: str = "acquisitionmetadata.ini", verbose: bool = False):
+def preview_newest(
+    path: Path,
+    odir: Path,
+    oldfset: set = None,
+    inifn: str = "acquisitionmetadata.ini",
+    verbose: bool = False,
+):
     root = Path(path).expanduser()
 
     if (root / "image.bmp").is_file():
@@ -72,7 +78,9 @@ def findnewest(path: Path, oldset: set = None, verbose: bool = False):
 
     # max(fl2,key=getmtime)                             # 9.2us per loop, 8.1 time cache Py3.5,  # 6.2us per loop, 18 times cache  Py27
     # max((str(f) for f in flist), key=getmtime)         # 13us per loop, 20 times cache, # 10.1us per loop, no cache Py27
-    newest = max(fset, key=lambda f: f.stat().st_mtime)  # 14.8us per loop, 7.5times cache, # 10.3us per loop, 21 times cache Py27
+    newest = max(
+        fset, key=lambda f: f.stat().st_mtime
+    )  # 14.8us per loop, 7.5times cache, # 10.3us per loop, 21 times cache Py27
 
     if verbose:
         print(f"newest file {newest}  {newest.stat().st_mtime}")
@@ -101,7 +109,9 @@ def spoolpath(path: Path):
     return flist
 
 
-def spoolparam(inifn: Path, superx: int = None, supery: int = None, stride: int = None) -> Dict[str, Any]:
+def spoolparam(
+    inifn: Path, superx: int = None, supery: int = None, stride: int = None
+) -> dict[str, Any]:
     inifn = Path(inifn).expanduser()
 
     if not inifn.is_file():
@@ -129,11 +139,20 @@ def spoolparam(inifn: Path, superx: int = None, supery: int = None, stride: int 
         assert isinstance(superx, int) and isinstance(supery, int)
         # TODO arbitrary sanity check.
         if superx * supery * 2 < 0.9 * framebytes or superx * supery * 2 > 0.999 * framebytes:
-            logging.critical("unlikely this format is read correctly. Was binning/frame size different?")
+            logging.critical(
+                "unlikely this format is read correctly. Was binning/frame size different?"
+            )
 
         bpp = 16
 
-    P = {"superx": superx, "supery": supery, "nframefile": Nframe, "stride": stride, "framebytes": framebytes, "bpp": bpp}
+    P = {
+        "superx": superx,
+        "supery": supery,
+        "nframefile": Nframe,
+        "stride": stride,
+        "framebytes": framebytes,
+        "bpp": bpp,
+    }
 
     return P
 
@@ -161,13 +180,13 @@ def readNeoSpool(fn: Path, P: dict, ifrm=None, tickonly: bool = False, zerocols:
     nx, ny = P["superx"], P["supery"]
 
     if P["bpp"] == 16:  # 2013-2015ish
-        dtype = np.uint16
+        dtype = np.uint16  # type: ignore
         if zerocols > 0:
             xslice = slice(None, -zerocols)
         else:
             xslice = slice(None)
     elif P["bpp"] == 32:  # 2016-present
-        dtype = np.uint32
+        dtype = np.uint32  # type: ignore
         xslice = slice(None)
     else:
         raise NotImplementedError("unknown spool format")
@@ -229,7 +248,7 @@ def readNeoSpool(fn: Path, P: dict, ifrm=None, tickonly: bool = False, zerocols:
     return imgs, ticks, tsec
 
 
-def tickfile(flist: Sequence[Path], P: dict, outfn: Path, zerocol: int) -> pandas.Series:
+def tickfile(flist: list[Path], P: dict, outfn: Path, zerocol: int) -> pandas.Series:
     """
     sorts filenames into FPGA tick order so that you can read video in time order.
 
@@ -324,7 +343,7 @@ def annowrite(img, newfn: Path, pngfn: Path):
 # %%
 
 
-def oldspool(path: Path, xy: Tuple[int, int], bn, kineticsec: float, startutc, outfn: Path):
+def oldspool(path: Path, xy: tuple[int, int], bn, kineticsec: float, startutc, outfn: Path):
     """
     Matlab Engine import can screw up sometimes, better to import only when truly needed.
     """
@@ -368,12 +387,16 @@ def oldspool(path: Path, xy: Tuple[int, int], bn, kineticsec: float, startutc, o
         with h5py.File(outfn, "w", libver="latest") as fh5:
             fimg = setupimgh5(fh5, nfile, ny, nx)
 
-            for i, f in enumerate(flist):  # these old spool files were named sequentially... not so since 2012 or so!
+            for i, f in enumerate(
+                flist
+            ):  # these old spool files were named sequentially... not so since 2012 or so!
                 print(f"processing {f}   {i+1} / {nfile}")
                 try:
                     datmat = eng.readNeoPacked12bit(str(f), nx, ny)
                     assert datmat.size == (ny, nx)
-                    fimg[i, ...] = datmat  # slow due to implicit casting from Matlab array to Numpy array--only way to do it.
+                    fimg[
+                        i, ...
+                    ] = datmat  # slow due to implicit casting from Matlab array to Numpy array--only way to do it.
                 except AssertionError as e:
                     logging.critical(f"matlab returned improper size array {e}")
                 except Exception as e:

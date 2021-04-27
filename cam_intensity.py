@@ -99,7 +99,14 @@ def loadplot(imgfn, calfn, israzel, isrvalid, showmovie, writemovie):
 
             vlim = percentile(imgs, (2, 99.9))
 
-            hi = ax.imshow(imgs[0, ...], cmap="gray", norm=LogNorm(), origin="lower", vmin=vlim[0], vmax=vlim[1])  # primes display
+            hi = ax.imshow(
+                imgs[0, ...],
+                cmap="gray",
+                norm=LogNorm(),
+                origin="lower",
+                vmin=vlim[0],
+                vmax=vlim[1],
+            )  # primes display
             fg.colorbar(hi)
 
             mim = masked_where(~mask, ones(imgs.shape[1:]))
@@ -119,7 +126,9 @@ def loadplot(imgfn, calfn, israzel, isrvalid, showmovie, writemovie):
 
         if showmovie or writemovie:
             with writer.saving(fg, str(ofn), 150):
-                bmean, bmin, bmax, bvar = update(imgs, mask, t, hi, ht, showmovie, writemovie, writer)
+                bmean, bmin, bmax, bvar = update(
+                    imgs, mask, t, hi, ht, showmovie, writemovie, writer
+                )
         else:
             bmean, bmin, bmax, bvar = update(imgs, mask, t, None, None, showmovie, writemovie, None)
 
@@ -155,7 +164,10 @@ if __name__ == "__main__":
 
     p = ArgumentParser()
     p.add_argument(
-        "-s", "--showmovie", help="show live movie (takes a while, don't use if you want quick summary plot", action="store_true"
+        "-s",
+        "--showmovie",
+        help="show live movie (takes a while, don't use if you want quick summary plot",
+        action="store_true",
     )
     p.add_argument(
         "-w",

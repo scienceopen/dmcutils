@@ -32,7 +32,9 @@ def avi2hdf5(avifn: Path, ofn: Path, t0, P: dict):
     # %% ingest data (consider RAM)
     # NOTE someday could do iterative read/write, would be smarter.
     vid = cv2.VideoCapture(str(avifn))
-    img8 = np.zeros((P["nframe"], P["supery"], P["superx"]), dtype=np.uint8)  # zeros in case bad frame
+    img8 = np.zeros(
+        (P["nframe"], P["supery"], P["superx"]), dtype=np.uint8
+    )  # zeros in case bad frame
 
     for i in range(P["nframe"]):
         ret, img = vid.read()  # a 3-D Numpy array, last axis is BGR: blue,green,red

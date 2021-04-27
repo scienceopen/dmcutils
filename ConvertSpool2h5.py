@@ -87,11 +87,13 @@ def converter(p):
 
                 det2 = np.zeros(flist.shape[0])
                 try:
-                    det2[: det.size * upfact - 1: upfact] = det  # gaps are zeros
+                    det2[: det.size * upfact - 1 : upfact] = det  # gaps are zeros
                 except ValueError:  # off by one
-                    det2[: det.size * upfact: upfact] = det  # gaps are zeros
+                    det2[: det.size * upfact : upfact] = det  # gaps are zeros
 
-                assert abs(len(flist) - det2.size) <= 20, f"{detfn} and {path} are maybe not for the same spool data file directory"
+                assert (
+                    abs(len(flist) - det2.size) <= 20
+                ), f"{detfn} and {path} are maybe not for the same spool data file directory"
                 det = det2
 
                 # keeps Lkeep/2 files each side of first/last detection.
@@ -101,7 +103,9 @@ def converter(p):
                 det = det[ikeep]
 
                 assert len(det) == ikeep.sum(), f"len(det): {len(det)}  ikeep.sum(): {ikeep.sum()}"
-                assert len(ikeep) == len(flist), f"len(flist): {len(flist)} len(ikeep): {len(ikeep)}"
+                assert len(ikeep) == len(
+                    flist
+                ), f"len(flist): {len(flist)} len(ikeep): {len(ikeep)}"
             # just convert all spool files (can be terabyte+ of data into HDF5)
             else:
                 print("no detection file specified, converting all Spool files")
@@ -147,10 +151,25 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
 
     p = ArgumentParser(description="Andor Neo Spool reader, plotter, converter")
-    p.add_argument("path", help="path containing 12-bit Neo spool files in broken format (2008-spring 2011)")
+    p.add_argument(
+        "path", help="path containing 12-bit Neo spool files in broken format (2008-spring 2011)"
+    )
     p.add_argument("-detfn", help="path to detections.h5 file")
-    p.add_argument("-xy", help="nx ny  number of x and y pixels respectively", nargs=2, default=(2544, 2160), type=int)
-    p.add_argument("-b", "--bin", help="nx ny  number of x and y binning respectively", nargs=2, default=(1, 1), type=int)
+    p.add_argument(
+        "-xy",
+        help="nx ny  number of x and y pixels respectively",
+        nargs=2,
+        default=(2544, 2160),
+        type=int,
+    )
+    p.add_argument(
+        "-b",
+        "--bin",
+        help="nx ny  number of x and y binning respectively",
+        nargs=2,
+        default=(1, 1),
+        type=int,
+    )
     p.add_argument("-k", "--kineticsec", help="kinetic rate of camera (sec)  = 1/fps", type=float)
     p.add_argument("--rotccw", help="rotate CCW value in 90 deg. steps", type=int, default=0)
     p.add_argument("--transpose", help="transpose image", action="store_true")
@@ -160,9 +179,15 @@ if __name__ == "__main__":
     p.add_argument("-o", "--outfn", help="extract raw data into this file [h5,fits,mat]")
     p.add_argument("-v", "--verbose", help="debugging", action="count", default=0)
     p.add_argument("-stride", help="length of footer in spool file", type=int)
-    p.add_argument("-z", "--zerocols", help="number of zero columns in spool file", type=int, default=8)
+    p.add_argument(
+        "-z", "--zerocols", help="number of zero columns in spool file", type=int, default=8
+    )
     p.add_argument("-fire", help="fire filename")
-    p.add_argument("-broken", help="enables special Matlab reader for broken 2009-2010 spool files", action="store_true")
+    p.add_argument(
+        "-broken",
+        help="enables special Matlab reader for broken 2009-2010 spool files",
+        action="store_true",
+    )
     P = p.parse_args()
 
     converter(P)

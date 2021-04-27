@@ -40,7 +40,9 @@ if __name__ == "__main__":
 
     p = ArgumentParser()
     p.add_argument("path", help="path to Solis spool files")
-    p.add_argument("tickfn", help="HDF5 file to write with tick vs filename (for reading file in time order)")
+    p.add_argument(
+        "tickfn", help="HDF5 file to write with tick vs filename (for reading file in time order)"
+    )
     p.add_argument("-xy", help="number of columns,rows", nargs=2, type=int, default=(640, 540))
     p.add_argument("-s", "--stride", help="number of header bytes", type=int, default=1296)
     p.add_argument("-z", "--zerocols", help="number of zero columns", type=int, default=0)
